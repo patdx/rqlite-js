@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "lib",
+    "es6/**/*.unit.js",
+    "es6/**/*.integration.js",
+    "es6/test"
+  ]
+}
