@@ -4,14 +4,20 @@
       "@babel/preset-env",
       {
         "targets": {
-          "node": "6"
+          "node": "16"
         }
       }
     ]
   ],
   "plugins": [
     "@babel/plugin-proposal-class-properties",
-    "@babel/plugin-transform-runtime",
+    [
+      "@babel/plugin-transform-runtime",
+      {
+        "helpers": false,
+        "regenerator": false
+      }
+    ],
     "add-module-exports"
   ]
 }
