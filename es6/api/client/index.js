@@ -2,8 +2,11 @@
  * Base API client for RQLite which abstracts the HTTP calls
  * @module api/client
  */
-import HttpRequest from '../../http-request'
-import { HTTP_METHOD_GET, HTTP_METHOD_POST } from '../../http-request/http-methods'
+import HttpRequest from '../../http-request';
+import {
+  HTTP_METHOD_GET,
+  HTTP_METHOD_POST,
+} from '../../http-request/http-methods';
 
 /**
  * @typedef HttpRequestOptions
@@ -22,19 +25,19 @@ import { HTTP_METHOD_GET, HTTP_METHOD_POST } from '../../http-request/http-metho
  * for RQLite v4 and lower
  * @returns {Object} The HTTP query
  */
-export function createQuery (options = {}) {
-  const { level, pretty, timings, atomic, transaction } = options
+export function createQuery(options = {}) {
+  const { level, pretty, timings, atomic, transaction } = options;
 
   // Remove all undefined values
-  const query = { level, pretty, timings, atomic, transaction }
+  const query = { level, pretty, timings, atomic, transaction };
   return Object.entries(query).reduce((acc, entry) => {
-    const [key, val] = entry
+    const [key, val] = entry;
     // Only take defined values
     if (typeof val !== 'undefined') {
-      acc[key] = val
+      acc[key] = val;
     }
-    return acc
-  }, {})
+    return acc;
+  }, {});
 }
 
 /**
@@ -48,17 +51,17 @@ export default class ApiClient extends HttpRequest {
    * @param {String} sql The SQL query
    * @param {HttpRequestOptions} [options={}] RQLite API options
    */
-  async get (path, sql, options = {}) {
-    const { useLeader } = options
+  async get(path, sql, options = {}) {
+    const { useLeader } = options;
     if (!path) {
-      throw new Error('The path argument is required')
+      throw new Error('The path argument is required');
     }
     return super.get({
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_GET,
       query: { ...createQuery(options), q: sql },
-    })
+    });
   }
 
   /**
@@ -67,10 +70,10 @@ export default class ApiClient extends HttpRequest {
    * @param {String} sql The SQL query
    * @param {HttpRequestOptions} [options={}] RQLite API options
    */
-  async post (path, sql, options = {}) {
-    const { useLeader } = options
+  async post(path, sql, options = {}) {
+    const { useLeader } = options;
     if (!path) {
-      throw new Error('The path argument is required')
+      throw new Error('The path argument is required');
     }
     return super.post({
       useLeader,
@@ -78,6 +81,6 @@ export default class ApiClient extends HttpRequest {
       httpMethod: HTTP_METHOD_POST,
       query: createQuery(options),
       body: Array.isArray(sql) ? sql : [sql],
-    })
+    });
   }
 }

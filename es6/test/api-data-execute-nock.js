@@ -2,8 +2,8 @@
  * RQLite API execute nock HTTP Mocks
  * @module test/api-data-execute-nock
  */
-import nock from 'nock'
-import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types'
+import nock from 'nock';
+import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types';
 
 /**
  * A nock HTTP request mock
@@ -20,7 +20,7 @@ export const EXECUTE_SUCCESS_RESPONSE = {
       rows_affected: 1,
     },
   ],
-}
+};
 
 /**
  * Creates a nock that represents a successful call to execute endpoint
@@ -31,22 +31,22 @@ export const EXECUTE_SUCCESS_RESPONSE = {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function executeSuccess (options = {}) {
+export function executeSuccess(options = {}) {
   const {
     auth,
     body,
     path,
     response = EXECUTE_SUCCESS_RESPONSE,
     url,
-  } = options
+  } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
-    .post(path, body)
+    .post(path, body);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(200, response)
+  return scope.reply(200, response);
 }
 
 /**
@@ -59,23 +59,16 @@ export function executeSuccess (options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function executeFailureHttpStatusCode (options = {}) {
-  const {
-    auth,
-    body,
-    path,
-    response = {},
-    statusCode,
-    url,
-  } = options
+export function executeFailureHttpStatusCode(options = {}) {
+  const { auth, body, path, response = {}, statusCode, url } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
-    .post(path, body)
+    .post(path, body);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(statusCode, response)
+  return scope.reply(statusCode, response);
 }
 
 /**
@@ -87,25 +80,19 @@ export function executeFailureHttpStatusCode (options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function executeFailureErrorCode (options = {}) {
-  const {
-    auth,
-    body,
-    path,
-    errorCode,
-    url,
-  } = options
+export function executeFailureErrorCode(options = {}) {
+  const { auth, body, path, errorCode, url } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
-    .post(path, body)
+    .post(path, body);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
   return scope.replyWithError({
     message: errorCode,
     code: errorCode,
-  })
+  });
 }
 
 /**
@@ -118,23 +105,20 @@ export function executeFailureErrorCode (options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function executeRedirectSuccess (options = {}) {
-  const {
-    auth,
-    body,
-    path,
-    redirectLocation,
-    statusCode = 301,
-    url,
-  } = options
+export function executeRedirectSuccess(options = {}) {
+  const { auth, body, path, redirectLocation, statusCode = 301, url } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
-    .post(path, body)
+    .post(path, body);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(statusCode, { Location: redirectLocation }, {
-    Location: redirectLocation,
-  })
+  return scope.reply(
+    statusCode,
+    { Location: redirectLocation },
+    {
+      Location: redirectLocation,
+    }
+  );
 }

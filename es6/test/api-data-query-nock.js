@@ -2,8 +2,8 @@
  * RQLite API execute nock HTTP Mocks
  * @module test/api-data-query-nock
  */
-import nock from 'nock'
-import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types'
+import nock from 'nock';
+import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types';
 
 /**
  * A nock HTTP request mock
@@ -21,7 +21,7 @@ export const QUERY_SUCCESS_RESPONSE = {
       values: [[1, 'fiona']],
     },
   ],
-}
+};
 
 /**
  * Multiple query success response body
@@ -39,14 +39,14 @@ export const QUERY_MULTIPLE_SUCCESS_RESPONSE = {
       values: [[1, 'test']],
     },
   ],
-}
+};
 
 /**
  * Nock function to all queries
  * @returns {Boolean} Return the value true
  */
-function queryAllowAll () {
-  return true
+function queryAllowAll() {
+  return true;
 }
 
 /**
@@ -59,22 +59,22 @@ function queryAllowAll () {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function querySuccess (options = {}) {
+export function querySuccess(options = {}) {
   const {
     auth,
     path,
     query = queryAllowAll,
     response = QUERY_SUCCESS_RESPONSE,
     url,
-  } = options
+  } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .get(path)
-    .query(query)
+    .query(query);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(200, response)
+  return scope.reply(200, response);
 }
 
 /**
@@ -89,7 +89,7 @@ export function querySuccess (options = {}) {
  * @param {Number} [options.times] The number of times the request should repeat
  * @returns {Nock} A query api success mock
  */
-export function queryFailureHttpStatusCode (options = {}) {
+export function queryFailureHttpStatusCode(options = {}) {
   const {
     auth,
     path,
@@ -98,18 +98,18 @@ export function queryFailureHttpStatusCode (options = {}) {
     url,
     statusCode,
     times,
-  } = options
+  } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .get(path)
-    .query(query)
+    .query(query);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
   if (times) {
-    scope.times(times)
+    scope.times(times);
   }
-  return scope.reply(statusCode, response)
+  return scope.reply(statusCode, response);
 }
 
 /**
@@ -123,25 +123,19 @@ export function queryFailureHttpStatusCode (options = {}) {
  * @param {String} [options.errorCode] The error code for the response
  * @returns {Nock} A query api success mock
  */
-export function queryFailureErrorCode (options = {}) {
-  const {
-    auth,
-    path,
-    query = queryAllowAll,
-    errorCode,
-    url,
-  } = options
+export function queryFailureErrorCode(options = {}) {
+  const { auth, path, query = queryAllowAll, errorCode, url } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .get(path)
-    .query(query)
+    .query(query);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
   return scope.replyWithError({
     message: errorCode,
     code: errorCode,
-  })
+  });
 }
 
 /**
@@ -157,7 +151,7 @@ export function queryFailureErrorCode (options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api redirect success mock
  */
-export function queryRedirectSuccess (options = {}) {
+export function queryRedirectSuccess(options = {}) {
   const {
     auth,
     path,
@@ -165,17 +159,21 @@ export function queryRedirectSuccess (options = {}) {
     redirectLocation,
     statusCode = 301,
     url,
-  } = options
+  } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .get(path)
-    .query(query)
+    .query(query);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(statusCode, { Location: redirectLocation }, {
-    Location: redirectLocation,
-  })
+  return scope.reply(
+    statusCode,
+    { Location: redirectLocation },
+    {
+      Location: redirectLocation,
+    }
+  );
 }
 
 /**
@@ -188,7 +186,7 @@ export function queryRedirectSuccess (options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A multiple query api success mock
  */
-export function queryMultipleSuccess (options = {}) {
+export function queryMultipleSuccess(options = {}) {
   const {
     auth,
     body,
@@ -196,13 +194,13 @@ export function queryMultipleSuccess (options = {}) {
     query = queryAllowAll,
     response = QUERY_MULTIPLE_SUCCESS_RESPONSE,
     url,
-  } = options
+  } = options;
   const scope = nock(url)
     .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
     .post(path, body)
-    .query(query)
+    .query(query);
   if (auth) {
-    scope.basicAuth(auth)
+    scope.basicAuth(auth);
   }
-  return scope.reply(200, response)
+  return scope.reply(200, response);
 }

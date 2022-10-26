@@ -2,23 +2,20 @@
  * Plain HTTP client to be used when creating RQLite specific API HTTP clients
  * @module http-request
  */
-import axios from 'axios'
-import { stringify as stringifyQuery } from 'qs'
-import { parse as parseUrl } from 'url'
-import {
-  HTTP_METHOD_GET,
-  HTTP_METHOD_POST,
-} from './http-methods'
+import axios from 'axios';
+import { stringify as stringifyQuery } from 'qs';
+import { parse as parseUrl } from 'url';
+import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
 import {
   CONTENT_TYPE_APPLICATION_JSON,
   // CONTENT_TYPE_APPLICATION_OCTET_STREAM,
-} from './content-types'
-import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors'
+} from './content-types';
+import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
 import {
   RETRYABLE_ERROR_CODES,
   RETRYABLE_HTTP_METHODS,
   RETRYABLE_STATUS_CODES,
-} from './retryable'
+} from './retryable';
 
 /**
  * RQliteJS HTTP Request options
@@ -58,21 +55,21 @@ import {
 /**
  * The default timeout value
  */
-export const DEAULT_TIMEOUT = 30000
+export const DEAULT_TIMEOUT = 30000;
 
 /**
  * The default to retry a request using the next host in the chain
  */
-export const DEAULT_RETRY_DELAY = 30000
+export const DEAULT_RETRY_DELAY = 30000;
 
 /**
  * Create default header for all HTTP requests
  * @param {Object} [headers={}] HTTP headers to send with the request
  * @returns {Object} The headers with defaults applied
  */
-export function createDefaultHeaders (headers = {}) {
-  const { Accept = CONTENT_TYPE_APPLICATION_JSON } = headers
-  return { ...headers, Accept }
+export function createDefaultHeaders(headers = {}) {
+  const { Accept = CONTENT_TYPE_APPLICATION_JSON } = headers;
+  return { ...headers, Accept };
 }
 
 /**
@@ -80,8 +77,8 @@ export function createDefaultHeaders (headers = {}) {
  * @param {String} path The path to clean
  * @returns {String} The clean path
  */
-function cleanPath (path) {
-  return String(path).replace(/^\//, '')
+function cleanPath(path) {
+  return String(path).replace(/^\//, '');
 }
 
 /**
@@ -92,11 +89,11 @@ function cleanPath (path) {
  * @param {Number} pow The exponential power
  * @returns {Number} The time to wait in milliseconds
  */
-export function getWaitTimeExponential (attempt = 0, base = 100, pow = 2) {
+export function getWaitTimeExponential(attempt = 0, base = 100, pow = 2) {
   if (attempt === 0) {
-    return 0
+    return 0;
   }
-  return (pow ** attempt) * base
+  return pow ** attempt * base;
 }
 
 /**
@@ -110,66 +107,66 @@ export default class HttpRequest {
    * first before attempting other hosts
    * @type {Number}
    */
-  activeHostIndex = 0
+  activeHostIndex = 0;
 
   /**
    * Whether or not the setNextActiveHostIndex() should
    * perform a round robin strategy
    */
-  activeHostRoundRobin = true
+  activeHostRoundRobin = true;
 
   /**
    * The regex pattern to check if a uri is absolute or relative,
    * if it is absolute the host is not appended
    */
-  absoluteUriPattern = /^https?:\/\//
+  absoluteUriPattern = /^https?:\/\//;
 
   /**
    * A list of hosts that are tried in round robin fashion
    * when certain HTTP responses are received
    * @type {String[]}
    */
-  hosts = []
+  hosts = [];
 
   /**
    * @type {import('http').Agent} The http agent if it is set
    */
-  httpAgent
+  httpAgent;
 
   /**
    * @type {import('https').Agent} The https agent if it is set
    */
-  httpsAgent
+  httpsAgent;
 
   /**
    * The host list index of the leader node defaults
    * to the first host
    * @type {Number}
    */
-  leaderHostIndex = 0
+  leaderHostIndex = 0;
 
   /**
    * Http error codes which are considered retryable
    * @type {Set}
    */
-  retryableErrorCodes = RETRYABLE_ERROR_CODES
+  retryableErrorCodes = RETRYABLE_ERROR_CODES;
 
   /**
    * Http status codes which are considered retryable
    * @type {Set}
    */
-  retryableStatusCodes = RETRYABLE_STATUS_CODES
+  retryableStatusCodes = RETRYABLE_STATUS_CODES;
 
   /**
    * Http methods which are considered retryable
    * @type {Set}
    */
-  retryableHttpMethods = RETRYABLE_HTTP_METHODS
+  retryableHttpMethods = RETRYABLE_HTTP_METHODS;
 
   /**
    * The exponential backoff base for retries
    */
-  exponentailBackoffBase = 100
+  exponentailBackoffBase = 100;
 
   /**
    * Authentication Map
@@ -177,7 +174,7 @@ export default class HttpRequest {
    * @property {String} username
    * @property {String} password
    */
-  authentication = new Map()
+  authentication = new Map();
 
   /**
    * Construtor for HttpRequest
@@ -200,10 +197,10 @@ export default class HttpRequest {
    * @param {Number} [options.exponentailBackoffBase] The value for exponentail backoff base
    * for retry exponential backoff
    */
-  constructor (hosts, options = {}) {
-    this.setHosts(hosts)
+  constructor(hosts, options = {}) {
+    this.setHosts(hosts);
     if (this.getTotalHosts() === 0) {
-      throw new Error('At least one host must be provided')
+      throw new Error('At least one host must be provided');
     }
     const {
       activeHostRoundRobin = true,
@@ -214,42 +211,57 @@ export default class HttpRequest {
       retryableHttpMethods,
       exponentailBackoffBase,
       authentication,
-    } = options
+    } = options;
     if (typeof authentication === 'object') {
-      const { username, password } = authentication
+      const { username, password } = authentication;
       if (username) {
-        this.authentication.set('username', username)
+        this.authentication.set('username', username);
       }
       if (password) {
-        this.authentication.set('password', password)
+        this.authentication.set('password', password);
       }
     }
     if (typeof activeHostRoundRobin !== 'undefined') {
-      this.setActiveHostRoundRobin(activeHostRoundRobin)
+      this.setActiveHostRoundRobin(activeHostRoundRobin);
     }
     if (typeof httpAgent !== 'undefined') {
-      this.setHttpAgent(httpAgent)
+      this.setHttpAgent(httpAgent);
     }
     if (typeof httpsAgent !== 'undefined') {
-      this.setHttpsAgent(httpsAgent)
+      this.setHttpsAgent(httpsAgent);
     }
-    if (retryableErrorCodes instanceof Set || Array.isArray(retryableErrorCodes)) {
+    if (
+      retryableErrorCodes instanceof Set ||
+      Array.isArray(retryableErrorCodes)
+    ) {
       this.setRetryableErrorCodes(
-        Array.isArray(retryableErrorCodes) ? Set(retryableErrorCodes) : retryableErrorCodes,
-      )
+        Array.isArray(retryableErrorCodes)
+          ? Set(retryableErrorCodes)
+          : retryableErrorCodes
+      );
     }
-    if (retryableStatusCodes instanceof Set || Array.isArray(retryableStatusCodes)) {
+    if (
+      retryableStatusCodes instanceof Set ||
+      Array.isArray(retryableStatusCodes)
+    ) {
       this.setRetryableStatusCodes(
-        Array.isArray(retryableStatusCodes) ? Set(retryableStatusCodes) : retryableStatusCodes,
-      )
+        Array.isArray(retryableStatusCodes)
+          ? Set(retryableStatusCodes)
+          : retryableStatusCodes
+      );
     }
-    if (retryableHttpMethods instanceof Set || Array.isArray(retryableHttpMethods)) {
+    if (
+      retryableHttpMethods instanceof Set ||
+      Array.isArray(retryableHttpMethods)
+    ) {
       this.setRetryableHttpMethods(
-        Array.isArray(retryableHttpMethods) ? Set(retryableHttpMethods) : retryableHttpMethods,
-      )
+        Array.isArray(retryableHttpMethods)
+          ? Set(retryableHttpMethods)
+          : retryableHttpMethods
+      );
     }
     if (Number.isFinite(exponentailBackoffBase)) {
-      this.setExponentailBackoffBase(exponentailBackoffBase)
+      this.setExponentailBackoffBase(exponentailBackoffBase);
     }
   }
 
@@ -259,13 +271,13 @@ export default class HttpRequest {
    * @param {String} [authentication.username] The host authentication username
    * @param {String} [authentication.password] The host authentication password
    */
-  setAuthentication (authentication = {}) {
-    const { username, password } = authentication
+  setAuthentication(authentication = {}) {
+    const { username, password } = authentication;
     if (username) {
-      this.authentication.set('username', username)
+      this.authentication.set('username', username);
     }
     if (password) {
-      this.authentication.set('password', password)
+      this.authentication.set('password', password);
     }
   }
 
@@ -273,96 +285,96 @@ export default class HttpRequest {
    * Set the exponentail backoff base
    * @param {Number} exponentailBackoffBase
    */
-  setExponentailBackoffBase (exponentailBackoffBase) {
-    this.exponentailBackoffBase = exponentailBackoffBase
+  setExponentailBackoffBase(exponentailBackoffBase) {
+    this.exponentailBackoffBase = exponentailBackoffBase;
   }
 
   /**
    * Get the exponentail backoff base
    * @return {Number} The exponentail backoff base
    */
-  getExponentailBackoffBase () {
-    return this.exponentailBackoffBase
+  getExponentailBackoffBase() {
+    return this.exponentailBackoffBase;
   }
 
   /**
    * Set the retryable error codes
    * @param {Set} retryableErrorCodes
    */
-  setRetryableErrorCodes (retryableErrorCodes) {
-    this.retryableErrorCodes = retryableErrorCodes
+  setRetryableErrorCodes(retryableErrorCodes) {
+    this.retryableErrorCodes = retryableErrorCodes;
   }
 
   /**
    * Get the retryable error codes
    * @returns {Set}
    */
-  getRetryableErrorCodes () {
-    return this.retryableErrorCodes
+  getRetryableErrorCodes() {
+    return this.retryableErrorCodes;
   }
 
   /**
    * Set the retryable status codes
    * @param {Set} retryableStatusCodes
    */
-  setRetryableStatusCodes (retryableStatusCodes) {
-    this.retryableStatusCodes = retryableStatusCodes
+  setRetryableStatusCodes(retryableStatusCodes) {
+    this.retryableStatusCodes = retryableStatusCodes;
   }
 
   /**
    * Get the retryable status codes
    * @returns {Set}
    */
-  getRetryableStatusCodes () {
-    return this.retryableStatusCodes
+  getRetryableStatusCodes() {
+    return this.retryableStatusCodes;
   }
 
   /**
    * Set the retryable http methods
    * @param {Set} retryableHttpMethods
    */
-  setRetryableHttpMethods (retryableHttpMethods) {
-    this.retryableHttpMethods = retryableHttpMethods
+  setRetryableHttpMethods(retryableHttpMethods) {
+    this.retryableHttpMethods = retryableHttpMethods;
   }
 
   /**
    * Get the retryable http methods
    * @returns {Set}
    */
-  getRetryableHttpMethods () {
-    return this.retryableHttpMethods
+  getRetryableHttpMethods() {
+    return this.retryableHttpMethods;
   }
 
   /**
    * Set an http agent which is useful for http keepalive requests
    * @param {import('http').Agent} httpAgent An http agent
    */
-  setHttpAgent (httpAgent) {
-    this.httpAgent = httpAgent
+  setHttpAgent(httpAgent) {
+    this.httpAgent = httpAgent;
   }
 
   /**
    * Get the set http agent
    * @returns {import('http').Agent|undefined} The https agent if it is set
    */
-  getHttpAgent () {
-    return this.httpAgent
+  getHttpAgent() {
+    return this.httpAgent;
   }
 
   /**
    * Set an https agent which is useful for https keepalive requests
    * @param {import('https').Agent} httpsAgent An https agent
    */
-  setHttpsAgent (httpsAgent) {
-    this.httpsAgent = httpsAgent
+  setHttpsAgent(httpsAgent) {
+    this.httpsAgent = httpsAgent;
   }
 
   /**
    * Get the set https agent
    * @returns {import('https').Agent|undefined} The https agent if it is set
    */
-  getHttpsAgent () {
-    return this.httpsAgent
+  getHttpsAgent() {
+    return this.httpsAgent;
   }
 
   /**
@@ -371,24 +383,24 @@ export default class HttpRequest {
    * that will be split on "," to create an array of hosts, the first
    * host will be tried first when there are multiple hosts
    */
-  setHosts (hosts) {
-    this.hosts = !Array.isArray(hosts) ? String(hosts).split(',') : hosts
+  setHosts(hosts) {
+    this.hosts = !Array.isArray(hosts) ? String(hosts).split(',') : hosts;
     this.hosts = this.hosts.reduce((acc, v) => {
       // Remove trailing slashed from hosts
-      const host = String(v).trim().replace(/\/$/, '')
+      const host = String(v).trim().replace(/\/$/, '');
       if (!host) {
-        return acc
+        return acc;
       }
-      return acc.concat(host)
-    }, [])
+      return acc.concat(host);
+    }, []);
   }
 
   /**
    * Get the list of hosts
    * @returns {String[]} The list of hosts
    */
-  getHosts () {
-    return this.hosts
+  getHosts() {
+    return this.hosts;
   }
 
   /**
@@ -396,13 +408,15 @@ export default class HttpRequest {
    * @param {String} host A host to find in hosts
    * @returns {Number} The found host index or -1 if not found
    */
-  findHostIndex (host) {
-    const parsedHostToFind = parseUrl(host)
+  findHostIndex(host) {
+    const parsedHostToFind = parseUrl(host);
     return this.getHosts().findIndex((v) => {
-      const parsedHost = parseUrl(v)
+      const parsedHost = parseUrl(v);
       // Find a host where all the parsed fields match the requested host
-      return ['hostname', 'protocol', 'port', 'path'].every((field) => parsedHostToFind[field] === parsedHost[field])
-    })
+      return ['hostname', 'protocol', 'port', 'path'].every(
+        (field) => parsedHostToFind[field] === parsedHost[field]
+      );
+    });
   }
 
   /**
@@ -411,10 +425,12 @@ export default class HttpRequest {
    * the master, this is prefered for write operations
    * @returns {String} The active host
    */
-  getActiveHost (useLeader) {
+  getActiveHost(useLeader) {
     // When useLeader is true we should just use the first host
-    const activeHostIndex = useLeader ? this.getLeaderHostIndex() : this.getActiveHostIndex()
-    return this.getHosts()[activeHostIndex]
+    const activeHostIndex = useLeader
+      ? this.getLeaderHostIndex()
+      : this.getActiveHostIndex();
+    return this.getHosts()[activeHostIndex];
   }
 
   /**
@@ -422,29 +438,29 @@ export default class HttpRequest {
    * @param {Number} activeHostIndex The index
    * @returns {Number} The active host index
    */
-  setActiveHostIndex (activeHostIndex) {
+  setActiveHostIndex(activeHostIndex) {
     if (!Number.isFinite(activeHostIndex)) {
-      throw new Error('The activeHostIndex should be a finite number')
+      throw new Error('The activeHostIndex should be a finite number');
     }
-    const totalHosts = this.getTotalHosts()
+    const totalHosts = this.getTotalHosts();
     if (activeHostIndex < 0) {
       // Don't allow an index less then zero
-      this.activeHostIndex = 0
+      this.activeHostIndex = 0;
     } else if (activeHostIndex >= totalHosts) {
       // Don't allow an index greater then the length of the hosts
-      this.activeHostIndex = totalHosts - 1
+      this.activeHostIndex = totalHosts - 1;
     } else {
-      this.activeHostIndex = activeHostIndex
+      this.activeHostIndex = activeHostIndex;
     }
-    return this.activeHostIndex
+    return this.activeHostIndex;
   }
 
   /**
    * Get the host index for the leader node
    * @returns {Number} The host index for the leader node
    */
-  getLeaderHostIndex () {
-    return this.leaderHostIndex
+  getLeaderHostIndex() {
+    return this.leaderHostIndex;
   }
 
   /**
@@ -452,27 +468,27 @@ export default class HttpRequest {
    * @param {Number} leaderHostIndex The index of the host that is the leader node
    * @returns {Number} The host index for the leader node
    */
-  setLeaderHostIndex (leaderHostIndex) {
+  setLeaderHostIndex(leaderHostIndex) {
     if (!Number.isFinite(leaderHostIndex)) {
-      throw new Error('The leaderHostIndex should be a finite number')
+      throw new Error('The leaderHostIndex should be a finite number');
     }
-    const totalHosts = this.getTotalHosts()
+    const totalHosts = this.getTotalHosts();
     if (leaderHostIndex < 0) {
-      this.leaderHostIndex = 0
+      this.leaderHostIndex = 0;
     } else if (leaderHostIndex > totalHosts) {
-      this.leaderHostIndex = totalHosts - 1
+      this.leaderHostIndex = totalHosts - 1;
     } else {
-      this.leaderHostIndex = leaderHostIndex
+      this.leaderHostIndex = leaderHostIndex;
     }
-    return this.leaderHostIndex
+    return this.leaderHostIndex;
   }
 
   /**
    * Get the active host index
    * @returns {Number} The active host index
    */
-  getActiveHostIndex () {
-    return this.activeHostIndex
+  getActiveHostIndex() {
+    return this.activeHostIndex;
   }
 
   /**
@@ -480,19 +496,19 @@ export default class HttpRequest {
    * @param {Boolean} activeHostRoundRobin If true setActiveHostIndex() will
    * perform a round robin
    */
-  setActiveHostRoundRobin (activeHostRoundRobin) {
+  setActiveHostRoundRobin(activeHostRoundRobin) {
     if (typeof activeHostRoundRobin !== 'boolean') {
-      throw new Error('The activeHostRoundRobin argument must be boolean')
+      throw new Error('The activeHostRoundRobin argument must be boolean');
     }
-    this.activeHostRoundRobin = activeHostRoundRobin
+    this.activeHostRoundRobin = activeHostRoundRobin;
   }
 
   /**
    * Get active host round robin value
    * @returns {Boolean} The value of activeHostRoundRobin
    */
-  getActiveHostRoundRobin () {
-    return this.activeHostRoundRobin
+  getActiveHostRoundRobin() {
+    return this.activeHostRoundRobin;
   }
 
   /**
@@ -500,46 +516,46 @@ export default class HttpRequest {
    * @param {Number} [activeHostIndex] An optional paramater to provide the active host index
    * @returns {Number} The next active host index which will wrap around to zero
    */
-  getNextActiveHostIndex (activeHostIndex = this.getActiveHostIndex()) {
-    const totalHosts = this.getTotalHosts()
-    const nextIndex = activeHostIndex + 1
+  getNextActiveHostIndex(activeHostIndex = this.getActiveHostIndex()) {
+    const totalHosts = this.getTotalHosts();
+    const nextIndex = activeHostIndex + 1;
     // If we are past the last index start back over at 1
     if (totalHosts === nextIndex) {
-      return 0
+      return 0;
     }
-    return nextIndex
+    return nextIndex;
   }
 
   /**
    * Set the active host index to the next host using a
    * round robin strategy
    */
-  setNextActiveHostIndex () {
+  setNextActiveHostIndex() {
     // Don't bother if we only have one host
     if (!this.getActiveHostRoundRobin()) {
-      return
+      return;
     }
-    const totalHosts = this.getTotalHosts()
+    const totalHosts = this.getTotalHosts();
     if (this.getActiveHostRoundRobin() && totalHosts <= 1) {
-      return
+      return;
     }
-    this.setActiveHostIndex(this.getNextActiveHostIndex())
+    this.setActiveHostIndex(this.getNextActiveHostIndex());
   }
 
   /**
    * Get the total number of hosts
    * @returns {Number} The total number of hosts
    */
-  getTotalHosts () {
-    return this.getHosts().length
+  getTotalHosts() {
+    return this.getHosts().length;
   }
 
   /**
    * Returns whether or not the uri passes a test for this.absoluteUriPattern
    * @returns {Boolean} True if the path is absolute
    */
-  uriIsAbsolute (uri) {
-    return this.absoluteUriPattern.test(uri)
+  uriIsAbsolute(uri) {
+    return this.absoluteUriPattern.test(uri);
   }
 
   /**
@@ -550,23 +566,19 @@ export default class HttpRequest {
    * @param {String} options.httpMethod The http method
    * @returns {Boolean} True if the request is retry able
    */
-  requestIsRetryable (options = {}) {
-    const {
-      statusCode,
-      errorCode,
-      httpMethod,
-    } = options
+  requestIsRetryable(options = {}) {
+    const { statusCode, errorCode, httpMethod } = options;
     // Honor strictly the http method
     if (!this.getRetryableHttpMethods().has(httpMethod)) {
-      return false
+      return false;
     }
     if (statusCode && this.getRetryableStatusCodes().has(statusCode)) {
-      return true
+      return true;
     }
     if (errorCode && this.getRetryableErrorCodes().has(errorCode)) {
-      return true
+      return true;
     }
-    return false
+    return false;
   }
 
   /**
@@ -576,7 +588,7 @@ export default class HttpRequest {
    * property when stream is false and a stream when the stream option is true
    * @throws {ERROR_HTTP_REQUEST_MAX_REDIRECTS} When the maximum number of redirect has been reached
    */
-  async fetch (options = {}) {
+  async fetch(options = {}) {
     const {
       body,
       headers = {},
@@ -594,22 +606,23 @@ export default class HttpRequest {
       exponentailBackoffBase = this.getExponentailBackoffBase(),
       httpAgent = this.getHttpAgent(),
       httpsAgent = this.getHttpsAgent(),
-    } = options
+    } = options;
     // Honor the supplied attemptHostIndex or get the active host
-    const activeHost = Number.isFinite(attemptHostIndex) ? this.getHosts()[attemptHostIndex]
-      : this.getActiveHost(useLeader)
-    let { uri } = options
+    const activeHost = Number.isFinite(attemptHostIndex)
+      ? this.getHosts()[attemptHostIndex]
+      : this.getActiveHost(useLeader);
+    let { uri } = options;
     if (!uri) {
-      throw new Error('The uri option is required')
+      throw new Error('The uri option is required');
     }
-    uri = this.uriIsAbsolute(uri) ? uri : `${activeHost}/${cleanPath(uri)}`
+    uri = this.uriIsAbsolute(uri) ? uri : `${activeHost}/${cleanPath(uri)}`;
     try {
-      let auth
+      let auth;
       if (this.authentication.size) {
         auth = {
           username: this.authentication.get('username'),
           password: this.authentication.get('password'),
-        }
+        };
       }
       const response = await axios({
         url: uri,
@@ -623,47 +636,54 @@ export default class HttpRequest {
         timeout,
         httpsAgent,
         httpAgent,
-        paramsSerializer (params) {
-          return stringifyQuery(params, { arrayFormat: 'brackets' })
+        paramsSerializer(params) {
+          return stringifyQuery(params, { arrayFormat: 'brackets' });
         },
-      })
+      });
       if (stream) {
-        return response.data
+        return response.data;
       }
       return {
         body: response.data,
         status: response.status,
-      }
+      };
     } catch (e) {
-      const { response = {}, code: errorCode } = e
-      const { status: responseStatus, headers: responseHeaders = {} } = response
+      const { response = {}, code: errorCode } = e;
+      const { status: responseStatus, headers: responseHeaders = {} } =
+        response;
       // Check if the error was a redirect
       const retryable = this.requestIsRetryable({
         statusCode: responseStatus,
         errorCode,
         httpMethod,
-      })
+      });
       // Save the next active host index and pass it to retry manually
-      let nextAttemptHostIndex = Number.isFinite(attemptHostIndex) ? attemptHostIndex
-        : this.getActiveHostIndex()
-      nextAttemptHostIndex += 1
+      let nextAttemptHostIndex = Number.isFinite(attemptHostIndex)
+        ? attemptHostIndex
+        : this.getActiveHostIndex();
+      nextAttemptHostIndex += 1;
       // We go past the last index start from zero
       if (nextAttemptHostIndex === this.getTotalHosts()) {
-        nextAttemptHostIndex = 0
+        nextAttemptHostIndex = 0;
       }
       // First check if this is a redirect error
       if (responseStatus === 301 || responseStatus === 302) {
         // We maxed out on redirect attempts
         if (redirectAttempt >= maxRedirects) {
-          throw ERROR_HTTP_REQUEST_MAX_REDIRECTS(`The maximum number of redirects ${maxRedirects} has been reached`)
+          throw ERROR_HTTP_REQUEST_MAX_REDIRECTS(
+            `The maximum number of redirects ${maxRedirects} has been reached`
+          );
         }
-        const location = typeof responseHeaders === 'object' ? responseHeaders.location : undefined
+        const location =
+          typeof responseHeaders === 'object'
+            ? responseHeaders.location
+            : undefined;
         // If we were asked to use the leader, but got redirect the leader moved so remember it
         if (useLeader) {
-          const newLeaderHostIndex = this.findHostIndex(location)
+          const newLeaderHostIndex = this.findHostIndex(location);
           // If the redirect exists in the hosts list remember it for next time
           if (newLeaderHostIndex > -1) {
-            this.setLeaderHostIndex(newLeaderHostIndex)
+            this.setLeaderHostIndex(newLeaderHostIndex);
           }
         }
         return this.fetch({
@@ -672,22 +692,25 @@ export default class HttpRequest {
           attempt: attempt + 1,
           redirectAttempt: redirectAttempt + 1,
           attemptHostIndex: nextAttemptHostIndex,
-        })
+        });
       }
       if (retryable && retryAttempt < retries) {
-        const waitTime = getWaitTimeExponential(retryAttempt, exponentailBackoffBase)
+        const waitTime = getWaitTimeExponential(
+          retryAttempt,
+          exponentailBackoffBase
+        );
         const delayPromise = new Promise((resolve) => {
-          setTimeout(resolve, waitTime)
-        })
-        await delayPromise
+          setTimeout(resolve, waitTime);
+        });
+        await delayPromise;
         return this.fetch({
           ...options,
           attempt: attempt + 1,
           retryAttempt: retryAttempt + 1,
           attemptHostIndex: nextAttemptHostIndex,
-        })
+        });
       }
-      throw e
+      throw e;
     }
   }
 
@@ -696,8 +719,8 @@ export default class HttpRequest {
    * @param {HttpRequestOptions} [options={}] The options
    * @see this.fetch() for options
    */
-  async get (options = {}) {
-    return this.fetch({ ...options, httpMethod: HTTP_METHOD_GET })
+  async get(options = {}) {
+    return this.fetch({ ...options, httpMethod: HTTP_METHOD_GET });
   }
 
   /**
@@ -705,7 +728,7 @@ export default class HttpRequest {
    * @param {HttpRequestOptions} [options={}] The options
    * @see this.fetch() for options
    */
-  async post (options = {}) {
-    return this.fetch({ ...options, httpMethod: HTTP_METHOD_POST })
+  async post(options = {}) {
+    return this.fetch({ ...options, httpMethod: HTTP_METHOD_POST });
   }
 }

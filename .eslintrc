@@ -4,10 +4,7 @@
     "mocha": true
   },
   "extends": "airbnb-base",
-  "plugins": [
-    "mocha",
-    "babel"
-  ],
+  "plugins": ["mocha", "babel", "prettier"],
   "ignorePatterns": ["lib/**"],
   "rules": {
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],

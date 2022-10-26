@@ -8,25 +8,25 @@
  * API call
  */
 export default class DataResultError extends Error {
-  constructor (...args) {
-    super(...args)
-    this.name = this.constructor.name
-    this.code = this.constructor.name
+  constructor(...args) {
+    super(...args);
+    this.name = this.constructor.name;
+    this.code = this.constructor.name;
   }
 
   /**
    * Get the result data error as plain object
    * @returns {Object} The data as an object
    */
-  toObject () {
-    return { error: this.message }
+  toObject() {
+    return { error: this.message };
   }
 
   /**
    * Convert the result data error to a JSON string
    * @returns {String} The JSON string for the data object
    */
-  toString () {
-    return JSON.stringify(this.toObject())
+  toString() {
+    return JSON.stringify(this.toObject());
   }
 }

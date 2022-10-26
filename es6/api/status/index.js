@@ -2,7 +2,7 @@
  * Status api client to perform RQLite status and diagnostics operations
  * @module api/status
  */
-import ApiClient from '../client'
+import ApiClient from '../client';
 
 /**
  * @typedef {Object} HttpResponse
@@ -19,19 +19,19 @@ import ApiClient from '../client'
 /**
  * The RQLite status api path
  */
-export const PATH_STATUS = '/status'
+export const PATH_STATUS = '/status';
 
 /**
  * Data api client to perform RQLite queries
  */
-export default class StatusApiClient extends ApiClient {
+export class StatusApiClient extends ApiClient {
   /**
    * Get the RQLite server status which defaults to the master host
    * @param {Object} [options={}] RQLite api options
    * @returns {HttpResponse} An HTTP response object
    */
-  async status (options = {}) {
-    return super.get(PATH_STATUS, { useLeader: true, ...options })
+  async status(options = {}) {
+    return super.get(PATH_STATUS, { useLeader: true, ...options });
   }
 
   /**
@@ -42,13 +42,13 @@ export default class StatusApiClient extends ApiClient {
    * RQLite response
    * @returns {StatusAllHostsResponse[]} An array of http response for the provide hosts
    */
-  async statusAllHosts (options = {}) {
-    const hosts = this.getHosts()
+  async statusAllHosts(options = {}) {
+    const hosts = this.getHosts();
     // Get the status for all of the hosts
     const promises = hosts.map(async (_host, activeHostIndex) => {
-      const response = await this.status({ ...options, activeHostIndex })
-      return { response, host: hosts[activeHostIndex] }
-    })
-    return Promise.all(promises)
+      const response = await this.status({ ...options, activeHostIndex });
+      return { response, host: hosts[activeHostIndex] };
+    });
+    return Promise.all(promises);
   }
 }

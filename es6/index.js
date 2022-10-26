@@ -2,12 +2,6 @@
  * RQLite JS client which export all of the api clients
  * @module rqlite-js
  */
-import DataApiClient from './api/data'
-import BackupApiClient from './api/backup'
-import StatusApiClient from './api/status'
-
-export default {
-  DataApiClient,
-  BackupApiClient,
-  StatusApiClient,
-}
+export { DataApiClient } from './api/data';
+export { BackupApiClient } from './api/backup';
+export { StatusApiClient } from './api/status';
