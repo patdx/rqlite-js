@@ -676,7 +676,9 @@ export default class HttpRequest {
       }
       if (retryable && retryAttempt < retries) {
         const waitTime = getWaitTimeExponential(retryAttempt, exponentailBackoffBase)
-        const delayPromise = new Promise((resolve) => setTimeout(resolve, waitTime))
+        const delayPromise = new Promise((resolve) => {
+          setTimeout(resolve, waitTime)
+        })
         await delayPromise
         return this.fetch({
           ...options,
