@@ -3,16 +3,14 @@
     "node": true,
     "mocha": true
   },
-  "extends": "airbnb-base",
-  "plugins": ["mocha", "babel", "prettier"],
+  "extends": ["airbnb-base", "prettier"],
+  "plugins": ["mocha", "babel"],
   "ignorePatterns": ["lib/**"],
   "rules": {
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "mocha/no-exclusive-tests": "error",
     "object-curly-newline": 0,
-    "object-curly-spacing": [2, "always"],
-    "semi": [2, "never"],
-    "space-before-function-paren": [2, "always"]
+    "object-curly-spacing": [2, "always"]
   },
   "parser": "@babel/eslint-parser"
 }
