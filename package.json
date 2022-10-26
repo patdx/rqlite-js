@@ -1,6 +1,6 @@
 {
   "name": "@patdx/rqlite-js",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "A client library for RQLite written in Javascript that works in NodeJS or the browser.",
   "main": "lib/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "docker-run-test": "docker-compose -p rqlitejs run test",
     "docker-stop": "docker-compose -p rqlitejs stop",
     "lint": "eslint es6/**/*.js",
-    "release": "npm run lint && npm run build-all && npm run test-build && standard-version",
+    "release": "NODE_ENV=production npm run lint && npm run build-all && npm run test-build && standard-version",
     "test": "mocha --require @babel/register es6/test/unit/index.unit.js es6/**/*.unit.js",
     "test-integrations": "mocha --require @babel/register --timeout 10000 lib/**/*.integration.js",
     "test-build": "mocha lib/test/unit/index.unit.js lib/**/*.unit.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rqlite/rqlite-js.git"
+    "url": "git+https://github.com/patdx/rqlite-js.git"
   },
   "keywords": [
     "rqlite",
@@ -35,7 +35,7 @@
   "bugs": {
     "url": "https://github.com/rqlite/rqlite-js/issues"
   },
-  "homepage": "https://github.com/rqlite/rqlite-js#readme",
+  "homepage": "https://github.com/patdx/rqlite-js",
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.17.10",
