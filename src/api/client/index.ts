@@ -45,17 +45,19 @@ export function createQuery(options: QueryOptions = {}) {
   }, {});
 }
 
+type PrimativeType = string | number | null | undefined;
+
 export type SqlQuery =
   | string
-  | [string, ...string[]]
-  | [string, Record<string, any>];
+  | [string, ...PrimativeType[]]
+  | [string, Record<string, PrimativeType>];
 
 /**
  * Base API client for RQLite which abstracts the HTTP calls
  * from the user
  */
 export class ApiClient {
-   _httpRequest: HttpRequest;
+  _httpRequest: HttpRequest;
 
   constructor(hosts: string[] | string, options: HttpRequestOptions2 = {}) {
     this._httpRequest = new HttpRequest(hosts, options);
