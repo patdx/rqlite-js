@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.11](https://github.com/patdx/rqlite-js/compare/v2.5.10...v2.5.11) (2022-10-27)
+
+
+### Bug Fixes
+
+* pass headers from data client ([4c40aa7](https://github.com/patdx/rqlite-js/commit/4c40aa782e747b74f28b935998ef9a817b354b6d))
+
 ### [2.5.10](https://github.com/patdx/rqlite-js/compare/v2.5.9...v2.5.10) (2022-10-27)
 
 ### [2.5.9](https://github.com/patdx/rqlite-js/compare/v2.5.8...v2.5.9) (2022-10-27)
