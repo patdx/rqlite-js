@@ -3,32 +3,41 @@
  * @module api/results/data-results
  */
 
+export type PlainDataResultError = {
+  error: string;
+};
+
 /**
  * A class that represents one data error result from an RQLite query or execute
  * API call
  */
 export class DataResultError extends Error {
-  code: string;
+  name = 'DataResultError';
 
-  constructor(...args) {
-    super(...args);
-    this.name = this.constructor.name;
-    this.code = this.constructor.name;
+  code = 'DataResultError';
+
+  error?: string;
+
+  constructor(message?: string) {
+    super(message);
+    this.error = message;
   }
 
   /**
    * Get the result data error as plain object
-   * @returns {Object} The data as an object
    */
-  toObject() {
+  toObject(): PlainDataResultError {
     return { error: this.message };
   }
 
   /**
    * Convert the result data error to a JSON string
-   * @returns {String} The JSON string for the data object
    */
-  toString() {
+  toString(): string {
     return JSON.stringify(this.toObject());
+  }
+
+  toJSON(): PlainDataResultError {
+    return this.toObject();
   }
 }

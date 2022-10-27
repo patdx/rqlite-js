@@ -36,5 +36,7 @@ export default defineConfig({
         types: 'index.d.ts',
       })
     );
+
+    fs.copyFileSync('README.md', 'dist/README.md');
   },
 });
