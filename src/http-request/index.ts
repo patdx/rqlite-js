@@ -32,7 +32,7 @@ export type HttpRequestOptions = {
   /**
    * HTTP headers to send with the request
    */
-  headers?: any;
+  headers?: Record<string, string>;
   /**
    * The HTTP method for the request
    * i.e. GET or POST

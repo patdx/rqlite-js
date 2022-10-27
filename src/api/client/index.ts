@@ -2,7 +2,11 @@
  * Base API client for RQLite which abstracts the HTTP calls
  * @module api/client
  */
-import { HttpRequest, HttpRequestOptions2 } from '../../http-request';
+import {
+  HttpRequest,
+  HttpRequestOptions,
+  HttpRequestOptions2,
+} from '../../http-request';
 import {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
@@ -69,7 +73,11 @@ export class ApiClient {
    * @param {String} sql The SQL query
    * @param {HttpRequestOptions} [options={}] RQLite API options
    */
-  async get(path: string, sql: string, options: QueryOptions = {}) {
+  async get(
+    path: string,
+    sql: string,
+    options?: HttpRequestOptions & QueryOptions
+  ) {
     const { useLeader } = options;
     if (!path) {
       throw new Error('The path argument is required');
@@ -78,6 +86,7 @@ export class ApiClient {
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_GET,
+      headers: options.headers,
       query: { ...createQuery(options), q: sql },
     });
   }
@@ -86,12 +95,13 @@ export class ApiClient {
    * Perform a RQLite data API post request
    * @param {String} path The path for the request i.e. /db/query
    * @param {String} sql The SQL query
-   * @param {HttpRequestOptions} [options={}] RQLite API options
+   * @param {HttpRequestOptions} [options={}]
    */
   async post(
     path: string,
     sql: SqlQuery | SqlQuery[],
-    options: QueryOptions = {}
+    /** RQLite API options */
+    options?: HttpRequestOptions & QueryOptions
   ) {
     const { useLeader } = options;
     if (!path) {
@@ -102,6 +112,7 @@ export class ApiClient {
       uri: path,
       httpMethod: HTTP_METHOD_POST,
       query: createQuery(options),
+      headers: options.headers,
       body: Array.isArray(sql) ? sql : [sql],
     });
   }

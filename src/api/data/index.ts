@@ -55,11 +55,7 @@ type QueryRequestOptions = HttpRequestOptions &
   DataRequestBaseOptions &
   QueryRequestBaseOptions;
 
-/**
- * Data execute request options
- * @typedef ExecuteRequestOptions
- * @type {HttpRequestOptions & DataRequestBaseOptions}
- */
+type ExecuteRequestOptions = HttpRequestOptions & DataRequestBaseOptions;
 
 /**
  * Send an RQLite query API request to the RQLite server
@@ -107,6 +103,7 @@ export class DataApiClient extends ApiClient {
     // If round robin is true try and balance selects across hosts when
     // the master node is not queried directly
     if (!useLeader) {
+      // eslint-disable-next-line no-underscore-dangle
       this._httpRequest.setNextActiveHostIndex();
     }
 
@@ -120,7 +117,7 @@ export class DataApiClient extends ApiClient {
    */
   async execute(
     sql: SqlQuery | SqlQuery[],
-    options = {}
+    options?: ExecuteRequestOptions
   ): Promise<DataResults> {
     const response = await super.post(PATH_EXECUTE, sql, options);
     return handleResponse(response as any, options);

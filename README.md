@@ -7,6 +7,7 @@ This is an opinionated fork with
 - TypeScript declarations
 - ES module output
 - all output bundled into a minimum number of files
+- pass default headers when creating the client
 
 ### TODO
 
