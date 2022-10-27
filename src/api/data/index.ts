@@ -85,10 +85,10 @@ export class DataApiClient extends ApiClient {
    */
   async query(
     sql: SqlQuery | SqlQuery[],
-    options: QueryRequestOptions = {}
+    options?: QueryRequestOptions
   ): Promise<DataResults> {
-    const { level } = options;
-    let { useLeader } = options;
+    const level = options?.level;
+    let useLeader = options?.useLeader;
     // Weak and strong consistency will be redirect to the master anyway
     // so skip the redirect HTTP response and got right to the master
     if (level !== CONSISTENCY_LEVEL_NONE) {
@@ -107,7 +107,7 @@ export class DataApiClient extends ApiClient {
       this._httpRequest.setNextActiveHostIndex();
     }
 
-    return handleResponse(response, options);
+    return handleResponse(response as any, options);
   }
 
   /**

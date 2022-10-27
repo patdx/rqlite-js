@@ -39,7 +39,7 @@ export function createQuery(options: QueryOptions = {}) {
 
   // Remove all undefined values
   const query = { level, pretty, timings, atomic, transaction };
-  return Object.entries(query).reduce((acc, entry) => {
+  return Object.entries(query).reduce<Record<string, any>>((acc, entry) => {
     const [key, val] = entry;
     // Only take defined values
     if (typeof val !== 'undefined') {
@@ -78,7 +78,7 @@ export class ApiClient {
     sql: string,
     options?: HttpRequestOptions & QueryOptions
   ) {
-    const { useLeader } = options;
+    const useLeader = options?.useLeader;
     if (!path) {
       throw new Error('The path argument is required');
     }
@@ -86,7 +86,7 @@ export class ApiClient {
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_GET,
-      headers: options.headers,
+      headers: options?.headers,
       query: { ...createQuery(options), q: sql },
     });
   }
@@ -103,7 +103,7 @@ export class ApiClient {
     /** RQLite API options */
     options?: HttpRequestOptions & QueryOptions
   ) {
-    const { useLeader } = options;
+    const useLeader = options?.useLeader;
     if (!path) {
       throw new Error('The path argument is required');
     }
@@ -112,7 +112,7 @@ export class ApiClient {
       uri: path,
       httpMethod: HTTP_METHOD_POST,
       query: createQuery(options),
-      headers: options.headers,
+      headers: options?.headers,
       body: Array.isArray(sql) ? sql : [sql],
     });
   }

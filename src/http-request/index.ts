@@ -2,7 +2,7 @@
  * Plain HTTP client to be used when creating RQLite specific API HTTP clients
  * @module http-request
  */
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { stringify as stringifyQuery } from 'qs';
 import { parse as parseUrl } from 'url';
 import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
@@ -93,12 +93,12 @@ export type HttpRequestOptions = {
    * An option http agent, useful for
    * keepalive pools using plain HTTP
    */
-  httpAgent?: import('http').Agent;
+  httpAgent?: import('node:http').Agent;
   /**
    * An option http agent, useful
    * for keepalive pools using SSL
    */
-  httpsAgent?: import('https').Agent;
+  httpsAgent?: import('node:https').Agent;
 
   // added after checking typescript
   exponentailBackoffBase?: number;
@@ -202,14 +202,14 @@ export class HttpRequest {
   hosts: string[] = [];
 
   /**
-   * @type {import('http').Agent} The http agent if it is set
+   * @type {import('node:http').Agent} The http agent if it is set
    */
-  httpAgent: import('http').Agent;
+  httpAgent?: import('node:http').Agent;
 
   /**
-   * @type {import('https').Agent} The https agent if it is set
+   * @type {import('node:https').Agent} The https agent if it is set
    */
-  httpsAgent: import('https').Agent;
+  httpsAgent?: import('node:https').Agent;
 
   /**
    * The host list index of the leader node defaults
@@ -239,7 +239,7 @@ export class HttpRequest {
   /**
    * The exponential backoff base for retries
    */
-  exponentailBackoffBase = 100;
+  exponentailBackoffBase?: number = 100;
 
   /**
    * Authentication Map
@@ -260,9 +260,9 @@ export class HttpRequest {
    * @param {String} [options.authentication.password] The host authentication password
    * @param {Boolean} [options.activeHostRoundRobin=true] If true this.setNextActiveHostIndex()
    * will perform a round robin when called
-   * @param {import('http').Agent} [options.httpAgent] An option http agent, useful for
+   * @param {import('node:http').Agent} [options.httpAgent] An option http agent, useful for
    * keepalive pools using plain HTTP
-   * @param {import('https').Agent} [options.httpsAgent] An option http agent, useful
+   * @param {import('node:https').Agent} [options.httpsAgent] An option http agent, useful
    * for keepalive pools using SSL
    * @param {Set|String[]} [options.retryableErrorCodes] The list of retryable error codes
    * @param {Set|Number[]} [options.retryableStatusCodes] The list of retryable http status codes
@@ -363,7 +363,7 @@ export class HttpRequest {
    * Set<any> the exponentail backoff base
    * @param {Number} exponentailBackoffBase
    */
-  setExponentailBackoffBase(exponentailBackoffBase: number) {
+  setExponentailBackoffBase(exponentailBackoffBase?: number) {
     this.exponentailBackoffBase = exponentailBackoffBase;
   }
 
@@ -371,7 +371,7 @@ export class HttpRequest {
    * Get the exponentail backoff base
    * @return {Number} The exponentail backoff base
    */
-  getExponentailBackoffBase(): number {
+  getExponentailBackoffBase(): number | undefined {
     return this.exponentailBackoffBase;
   }
 
@@ -425,33 +425,33 @@ export class HttpRequest {
 
   /**
    * Set<any> an http agent which is useful for http keepalive requests
-   * @param {import('http').Agent} httpAgent An http agent
+   * @param {import('node:http').Agent} httpAgent An http agent
    */
-  setHttpAgent(httpAgent: import('http').Agent) {
+  setHttpAgent(httpAgent: import('node:http').Agent) {
     this.httpAgent = httpAgent;
   }
 
   /**
    * Get the Set<any> http agent
-   * @returns {import('http').Agent|undefined} The https agent if it is set
+   * @returns {import('node:http').Agent|undefined} The https agent if it is set
    */
-  getHttpAgent(): import('http').Agent | undefined {
+  getHttpAgent(): import('node:http').Agent | undefined {
     return this.httpAgent;
   }
 
   /**
    * Set<any> an https agent which is useful for https keepalive requests
-   * @param {import('https').Agent} httpsAgent An https agent
+   * @param {import('node:https').Agent} httpsAgent An https agent
    */
-  setHttpsAgent(httpsAgent: import('https').Agent) {
+  setHttpsAgent(httpsAgent: import('node:https').Agent) {
     this.httpsAgent = httpsAgent;
   }
 
   /**
    * Get the Set<any> https agent
-   * @returns {import('https').Agent|undefined} The https agent if it is set
+   * @returns {import('node:https').Agent|undefined} The https agent if it is set
    */
-  getHttpsAgent(): import('https').Agent | undefined {
+  getHttpsAgent(): import('node:https').Agent | undefined {
     return this.httpsAgent;
   }
 
@@ -463,14 +463,11 @@ export class HttpRequest {
    */
   setHosts(hosts: string[] | string) {
     this.hosts = !Array.isArray(hosts) ? String(hosts).split(',') : hosts;
-    this.hosts = this.hosts.reduce((acc, v) => {
+    this.hosts = this.hosts.flatMap((v) => {
       // Remove trailing slashed from hosts
       const host = String(v).trim().replace(/\/$/, '');
-      if (!host) {
-        return acc;
-      }
-      return acc.concat(host);
-    }, []);
+      return host ? [host] : [];
+    });
   }
 
   /**
@@ -491,7 +488,7 @@ export class HttpRequest {
     return this.getHosts().findIndex((v) => {
       const parsedHost = parseUrl(v);
       // Find a host where all the parsed fields match the requested host
-      return ['hostname', 'protocol', 'port', 'path'].every(
+      return (['hostname', 'protocol', 'port', 'path'] as const).every(
         (field) => parsedHostToFind[field] === parsedHost[field]
       );
     });
@@ -634,7 +631,7 @@ export class HttpRequest {
    * Returns whether or not the uri passes a test for this.absoluteUriPattern
    * @returns {Boolean} True if the path is absolute
    */
-  uriIsAbsolute(uri): boolean {
+  uriIsAbsolute(uri: string): boolean {
     return this.absoluteUriPattern.test(uri);
   }
 
@@ -697,7 +694,7 @@ export class HttpRequest {
     } = options ?? {};
     // Honor the supplied attemptHostIndex or get the active host
     const activeHost = Number.isFinite(attemptHostIndex)
-      ? this.getHosts()[attemptHostIndex]
+      ? this.getHosts()[attemptHostIndex!]
       : this.getActiveHost(useLeader);
 
     let uri = options?.uri;
@@ -712,7 +709,7 @@ export class HttpRequest {
         auth = {
           username: this.authentication.get('username'),
           password: this.authentication.get('password'),
-        };
+        } as any;
       }
       const response = await axios({
         url: uri,
@@ -738,9 +735,10 @@ export class HttpRequest {
         status: response.status,
       };
     } catch (e) {
-      const { response = {}, code: errorCode } = e;
+      // axios.isAxiosError(e)
+      const { response = {}, code: errorCode } = e as AxiosError;
       const { status: responseStatus, headers: responseHeaders = {} } =
-        response;
+        response as any;
       // Check if the error was a redirect
       const retryable = this.requestIsRetryable({
         statusCode: responseStatus,
@@ -749,8 +747,9 @@ export class HttpRequest {
       });
       // Save the next active host index and pass it to retry manually
       let nextAttemptHostIndex = Number.isFinite(attemptHostIndex)
-        ? attemptHostIndex
+        ? attemptHostIndex!
         : this.getActiveHostIndex();
+
       nextAttemptHostIndex += 1;
       // We go past the last index start from zero
       if (nextAttemptHostIndex === this.getTotalHosts()) {

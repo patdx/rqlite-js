@@ -10,7 +10,8 @@
     "emitDeclarationOnly": true,
     "outDir": "lib",
     "types": ["node", "mocha"],
-    "declarationMap": true
+    "declarationMap": true,
+    "strict": true
   },
   "exclude": ["node_modules", "lib"],
   "include": ["src/**/*"],

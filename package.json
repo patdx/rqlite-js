@@ -2,6 +2,9 @@
   "name": "@patdx/rqlite-js",
   "type": "module",
   "version": "2.5.12",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A client library for RQLite written in Javascript that works in NodeJS or the browser.",
   "scripts": {
     "build": "tsup",
@@ -14,7 +17,7 @@
     "docker-run-test": "docker-compose -p rqlitejs run test",
     "docker-stop": "docker-compose -p rqlitejs stop",
     "lint": "eslint src/**/*.ts",
-    "release": "npm run lint && npm run build-all && npm run test-build && standard-version",
+    "release": "npm run lint && npm run build-all && npm run test-build && release-it",
     "test": "mocha --require @babel/register es6/test/unit/index.unit.js es6/**/*.unit.js",
     "test-integrations": "mocha --require @babel/register --timeout 10000 lib/**/*.integration.js",
     "test-build": "mocha lib/test/unit/index.unit.js lib/**/*.unit.js || true",
@@ -68,7 +71,7 @@
     "nock": "13.2.9",
     "prettier": "2.7.1",
     "prettier-package-json": "2.7.0",
-    "standard-version": "9.5.0",
+    "release-it": "15.5.0",
     "ts-migrate": "0.1.34",
     "tsup": "6.3.0",
     "typescript": "4.8.4"

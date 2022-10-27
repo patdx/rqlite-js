@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 import fs from 'fs';
 import _ from 'lodash';
-import { format, check } from 'prettier-package-json';
+import { format } from 'prettier-package-json';
 
 export default defineConfig({
   entry: ['src/index.ts'],

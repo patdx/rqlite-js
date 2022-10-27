@@ -1,19 +1,22 @@
 # @patdx/rqlite-js &middot; [![npm version](https://img.shields.io/npm/v/@patdx/rqlite-js.svg?style=flat)](https://www.npmjs.com/package/rqlite-js)
 
-## Changes from rqlist-js
+## Changes from rqlite-js
 
-This is an opinionated fork with
+This is an opinionated fork with:
 
 - TypeScript declarations
 - ES module output
-- all output bundled into a minimum number of files
-- pass default headers when creating the client
+- All output bundled into a minimum number of files
 
 ### TODO
 
+- Switch from classes to plain objects for better tree shaking and more predictable serialization
+- Pass default headers when creating the client
 - replace axios with a fetch implementation
 - get tests working
 - replace qs with URLSearchParams
+
+---
 
  <!-- &middot; [![Build Status](https://travis-ci.org/rqlite/rqlite-js.svg?branch=master)](https://travis-ci.org/rqlite/rqlite-js) &middot; [![Google Group](https://img.shields.io/badge/Google%20Group--blue.svg)](https://groups.google.com/group/rqlite) -->
 

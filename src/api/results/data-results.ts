@@ -51,22 +51,25 @@ export class DataResults {
     }
     this.time = safeParseFloat(data.time, 0.0);
     const { results = [] } = data;
-    this.results = results.reduce((acc, result) => {
-      // If there is an error property this is an error
-      if (typeof result === 'object' && result.error) {
-        return acc.concat(new DataResultError(result.error));
-      }
-      const { values: vals } = result;
-      // We don't have values so this is a single result row
-      if (!vals) {
-        return acc.concat(new DataResult(result));
-      }
-      // Map the values to DataResult instances
-      const dataResults = vals.map(
-        (_v, valuesIndex) => new DataResult(result, valuesIndex)
-      );
-      return acc.concat(dataResults);
-    }, []);
+    this.results = results.reduce<(DataResult | DataResultError)[]>(
+      (acc, result) => {
+        // If there is an error property this is an error
+        if (typeof result === 'object' && result.error) {
+          return acc.concat(new DataResultError(result.error));
+        }
+        const { values: vals } = result;
+        // We don't have values so this is a single result row
+        if (!vals) {
+          return acc.concat(new DataResult(result));
+        }
+        // Map the values to DataResult instances
+        const dataResults = vals.map(
+          (_v, valuesIndex) => new DataResult(result, valuesIndex)
+        );
+        return acc.concat(dataResults);
+      },
+      []
+    );
   }
 
   /**
@@ -82,9 +85,9 @@ export class DataResults {
    * @returns {DataResultError|undefined}
    */
   getFirstError(): DataResultError | undefined {
-    return this.results.find((v): v is DataResultError => {
-      return v instanceof DataResultError;
-    });
+    return this.results.find(
+      (v): v is DataResultError => v instanceof DataResultError
+    );
   }
 
   /**

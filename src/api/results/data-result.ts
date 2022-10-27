@@ -42,6 +42,7 @@ export class DataResult {
   /**
    * An array of DataResult and/or DataResultError instances
    */
+  // eslint-disable-next-line no-use-before-define
   results: Array<DataResult | DataResultError> = [];
 
   /**
@@ -70,7 +71,7 @@ export class DataResult {
     // Map the values array to an object where columns are the properties
     if (Number.isFinite(valuesIndex)) {
       const { columns } = result;
-      const resultValues = result.values[valuesIndex];
+      const resultValues = result.values[valuesIndex!];
       if (resultValues) {
         this.data = resultValues.reduce((acc, val, i) => {
           const col = columns[i];
@@ -85,7 +86,7 @@ export class DataResult {
    * Return the value a property or undefined if it does not exist
    * @returns {*} The value of the property or undefined
    */
-  get(property) {
+  get(property: string) {
     return this.data[property];
   }
 
