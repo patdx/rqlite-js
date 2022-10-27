@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.8](https://github.com/patdx/rqlite-js/compare/v2.5.7...v2.5.8) (2022-10-27)
+
+
+### Bug Fixes
+
+* bundle output ([e72b112](https://github.com/patdx/rqlite-js/commit/e72b112fd678db14962571ddcddd005553b5f5e7))
+
 ### [2.5.7](https://github.com/patdx/rqlite-js/compare/v2.5.6...v2.5.7) (2022-10-26)
 
 ### [2.5.6](https://github.com/patdx/rqlite-js/compare/v2.5.5...v2.5.6) (2022-10-26)
