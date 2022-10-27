@@ -117,6 +117,8 @@ export type HttpRequestOptions2 = {
   retryableStatusCodes?: Set<any> | number[];
   retryableHttpMethods?: Set<any> | string[];
   exponentailBackoffBase?: number;
+  /** default headers */
+  headers?: Record<string, string>;
 };
 
 /**
@@ -135,9 +137,9 @@ export const DEAULT_RETRY_DELAY = 30000;
  * @returns {Object} The headers with defaults applied
  */
 export function createDefaultHeaders(
-  headers: Record<string, string> = {}
+  headers?: Record<string, string>
 ): Record<string, string> {
-  const { Accept = CONTENT_TYPE_APPLICATION_JSON } = headers;
+  const { Accept = CONTENT_TYPE_APPLICATION_JSON } = headers ?? {};
   return { ...headers, Accept };
 }
 
@@ -249,6 +251,8 @@ export class HttpRequest {
    */
   authentication: Map<string, string> = new Map();
 
+  headers?: Record<string, any>;
+
   /**
    * Construtor for HttpRequest
    * @param {String[]|String} hosts An array of RQLite hosts or a string
@@ -270,7 +274,7 @@ export class HttpRequest {
    * @param {Number} [options.exponentailBackoffBase] The value for exponentail backoff base
    * for retry exponential backoff
    */
-  constructor(hosts: string[] | string, options: HttpRequestOptions2 = {}) {
+  constructor(hosts: string[] | string, options?: HttpRequestOptions2) {
     this.setHosts(hosts);
     if (this.getTotalHosts() === 0) {
       throw new Error('At least one host must be provided');
@@ -284,7 +288,11 @@ export class HttpRequest {
       retryableHttpMethods,
       exponentailBackoffBase,
       authentication,
-    } = options;
+      headers,
+    } = options ?? {};
+    if (headers) {
+      this.headers = headers;
+    }
     if (typeof authentication === 'object') {
       const { username, password } = authentication;
       if (username) {
@@ -676,7 +684,6 @@ export class HttpRequest {
   ): Promise<{ status: number; body: object | string }> {
     const {
       body,
-      headers = {},
       httpMethod = HTTP_METHOD_GET,
       query,
       stream = false,
@@ -716,7 +723,12 @@ export class HttpRequest {
         auth,
         data: body,
         maxRedirects: 0, // Handle redirects manually to allow reposting data
-        headers: createDefaultHeaders(headers),
+        headers: createDefaultHeaders({
+          // default headers for client
+          ...this.headers,
+          // headers for fetch request
+          ...options?.headers,
+        }),
         responseType: stream ? 'stream' : 'json',
         method: httpMethod,
         params: query,
