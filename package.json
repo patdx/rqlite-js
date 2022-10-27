@@ -1,7 +1,7 @@
 {
   "name": "@patdx/rqlite-js",
   "type": "module",
-  "version": "2.5.9",
+  "version": "2.5.10",
   "description": "A client library for RQLite written in Javascript that works in NodeJS or the browser.",
   "scripts": {
     "build": "tsup",
