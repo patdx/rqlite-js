@@ -2,13 +2,13 @@
  * Class for handling many RQLite data api results
  * @module api/results/data-results
  */
-import DataResult from './data-result';
-import DataResultError from './data-result-error';
+import { DataResult } from './data-result';
+import { DataResultError } from './data-result-error';
 
 /**
  * A class to manage a list of results from an RQLite query or execute API response
  */
-export default class DataResults {
+export class DataResults {
   /**
    * The time the results took to return from the
    * RQLite api

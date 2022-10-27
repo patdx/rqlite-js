@@ -5,20 +5,15 @@
     "moduleResolution": "Node",
     "module": "CommonJS",
     "target": "es6",
-    
+
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "lib",
     "types": ["node"],
     "declarationMap": true
   },
-  "exclude": [
-    "node_modules",
-    "lib"
-  ],
-  "include": [
-    "es6/**/*"
-  ],
+  "exclude": ["node_modules", "lib"],
+  "include": ["src/**/*"],
   "files.eol": "\n",
   "editor.insertSpaces": true,
   "editor.tabSize": 2,

@@ -5,9 +5,10 @@
   },
   "extends": ["airbnb-base", "prettier"],
   "plugins": ["mocha", "babel"],
-  "ignorePatterns": ["lib/**"],
+  "ignorePatterns": ["dist/**"],
   "rules": {
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "import/prefer-default-export": "off",
     "mocha/no-exclusive-tests": "error",
     "object-curly-newline": 0,
     "object-curly-spacing": [2, "always"]

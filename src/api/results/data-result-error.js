@@ -7,7 +7,7 @@
  * A class that represents one data error result from an RQLite query or execute
  * API call
  */
-export default class DataResultError extends Error {
+export class DataResultError extends Error {
   constructor(...args) {
     super(...args);
     this.name = this.constructor.name;

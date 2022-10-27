@@ -3,7 +3,7 @@
  * as query and execute
  * @module api/data
  */
-import ApiClient from '../client';
+import { ApiClient } from '../client';
 import { DataResults } from '../results';
 
 /**

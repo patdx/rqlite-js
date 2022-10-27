@@ -2,7 +2,7 @@
  * Base API client for RQLite which abstracts the HTTP calls
  * @module api/client
  */
-import HttpRequest from '../../http-request';
+import { HttpRequest } from '../../http-request';
 import {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
@@ -44,7 +44,7 @@ export function createQuery(options = {}) {
  * Base API client for RQLite which abstracts the HTTP calls
  * from the user
  */
-export default class ApiClient extends HttpRequest {
+export class ApiClient extends HttpRequest {
   /**
    * Perform a RQLite data API get request
    * @param {String} path The path for the request i.e. /db/query

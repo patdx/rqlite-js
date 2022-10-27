@@ -7,7 +7,7 @@
  * A class that represents one data result from an RQLite query or execute
  * API call
  */
-export default class DataResult {
+export class DataResult {
   /**
    * The time the results query took to complete
    * @type {Number}

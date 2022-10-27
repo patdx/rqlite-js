@@ -8,7 +8,7 @@ import {
   executeSuccess,
   EXECUTE_SUCCESS_RESPONSE,
 } from '../../test/api-data-execute-nock';
-import ApiClient, { createQuery } from '.';
+import { ApiClient, createQuery } from '.';
 
 const HOST = 'http://www.rqlite.com:4001';
 

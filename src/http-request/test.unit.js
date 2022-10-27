@@ -21,7 +21,7 @@ import {
   RETRYABLE_HTTP_METHODS,
   RETRYABLE_STATUS_CODES,
 } from './retryable';
-import HttpRequest, { createDefaultHeaders, getWaitTimeExponential } from '.';
+import { HttpRequest, createDefaultHeaders, getWaitTimeExponential } from '.';
 
 const username = 'TestUsername';
 const password = 'TestPassword';

@@ -101,7 +101,7 @@ export function getWaitTimeExponential(attempt = 0, base = 100, pow = 2) {
  * should extend for consistent communitication with an RQLite
  * server
  */
-export default class HttpRequest {
+export class HttpRequest {
   /**
    * The index of the host in this.hosts which will be tried
    * first before attempting other hosts
