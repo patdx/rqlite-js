@@ -5,6 +5,7 @@ import { format } from 'prettier-package-json';
 
 export default defineConfig({
   entry: ['src/index.ts'],
+  outDir: './dist/@patdx/rqlite-js',
   dts: true,
   splitting: false,
   // sourcemap: true,
@@ -14,7 +15,7 @@ export default defineConfig({
     const pkg = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
 
     fs.writeFileSync(
-      'dist/package.json',
+      './dist/@patdx/rqlite-js/package.json',
 
       format({
         ..._.pick(
@@ -37,6 +38,6 @@ export default defineConfig({
       })
     );
 
-    fs.copyFileSync('README.md', 'dist/README.md');
+    fs.copyFileSync('README.md', './dist/@patdx/rqlite-js/README.md');
   },
 });

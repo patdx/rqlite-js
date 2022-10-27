@@ -1,5 +1,5 @@
 {
   "npm": {
-    "publishPath": "dist"
+    "publishPath": "./dist/@patdx/rqlite-js"
   }
 }
