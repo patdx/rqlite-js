@@ -58,7 +58,7 @@ export class BackupApiClient extends HttpRequest {
    * @param {String} [format=BACKUP_DATA_FORMAT_SQL] The backup data format
    * @returns {Stream} The response stream
    */
-  async load(data, format = BACKUP_DATA_FORMAT_SQL) {
+  async load(data: Buffer | string, format = BACKUP_DATA_FORMAT_SQL) {
     return super.post({
       body: data,
       headers: {

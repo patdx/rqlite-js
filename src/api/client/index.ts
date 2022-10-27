@@ -2,16 +2,21 @@
  * Base API client for RQLite which abstracts the HTTP calls
  * @module api/client
  */
-import { HttpRequest } from '../../http-request';
+import { HttpRequest, HttpRequestOptions2 } from '../../http-request';
 import {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
 } from '../../http-request/http-methods';
 
-/**
- * @typedef HttpRequestOptions
- * @type {import('../../http-request').HttpRequestOptions}
- */
+type QueryOptions = {
+  level?: string;
+  pretty?: boolean;
+  timings?: boolean;
+  atomic?: boolean;
+  transaction?: boolean;
+
+  useLeader?: boolean;
+};
 
 /**
  * Create the base HTTP query options from RQLite API options
@@ -25,7 +30,7 @@ import {
  * for RQLite v4 and lower
  * @returns {Object} The HTTP query
  */
-export function createQuery(options = {}) {
+export function createQuery(options: QueryOptions = {}) {
   const { level, pretty, timings, atomic, transaction } = options;
 
   // Remove all undefined values
@@ -40,23 +45,34 @@ export function createQuery(options = {}) {
   }, {});
 }
 
+export type SqlQuery =
+  | string
+  | [string, ...string[]]
+  | [string, Record<string, any>];
+
 /**
  * Base API client for RQLite which abstracts the HTTP calls
  * from the user
  */
-export class ApiClient extends HttpRequest {
+export class ApiClient {
+   _httpRequest: HttpRequest;
+
+  constructor(hosts: string[] | string, options: HttpRequestOptions2 = {}) {
+    this._httpRequest = new HttpRequest(hosts, options);
+  }
+
   /**
    * Perform a RQLite data API get request
    * @param {String} path The path for the request i.e. /db/query
    * @param {String} sql The SQL query
    * @param {HttpRequestOptions} [options={}] RQLite API options
    */
-  async get(path, sql, options = {}) {
+  async get(path: string, sql: string, options: QueryOptions = {}) {
     const { useLeader } = options;
     if (!path) {
       throw new Error('The path argument is required');
     }
-    return super.get({
+    return this._httpRequest.get({
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_GET,
@@ -70,12 +86,16 @@ export class ApiClient extends HttpRequest {
    * @param {String} sql The SQL query
    * @param {HttpRequestOptions} [options={}] RQLite API options
    */
-  async post(path, sql, options = {}) {
+  async post(
+    path: string,
+    sql: SqlQuery | SqlQuery[],
+    options: QueryOptions = {}
+  ) {
     const { useLeader } = options;
     if (!path) {
       throw new Error('The path argument is required');
     }
-    return super.post({
+    return this._httpRequest.post({
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_POST,

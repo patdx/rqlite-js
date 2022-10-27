@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { format, check } from 'prettier-package-json';
 
 export default defineConfig({
-  entry: ['src/index.js'],
+  entry: ['src/index.ts'],
   dts: true,
   splitting: false,
   // sourcemap: true,

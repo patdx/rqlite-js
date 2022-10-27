@@ -3,6 +3,19 @@
  * @module api/results/data-result
  */
 
+import { safeParseFloat, safeParseInt } from '../../utils';
+import { DataResultError } from './data-result-error';
+
+export type RawDataResult = {
+  error: string;
+  columns: string[];
+  types: string[];
+  values: any[][];
+  rows_affected?: number;
+  time?: number;
+  last_insert_id?: number;
+};
+
 /**
  * A class that represents one data result from an RQLite query or execute
  * API call
@@ -12,13 +25,13 @@ export class DataResult {
    * The time the results query took to complete
    * @type {Number}
    */
-  time = 0.0;
+  time: number = 0.0;
 
   /**
    * The last insert id
    * @type {Number}
    */
-  lastInsertId;
+  lastInsertId?: number;
 
   /**
    * The rows affected
@@ -28,22 +41,21 @@ export class DataResult {
 
   /**
    * An array of DataResult and/or DataResultError instances
-   * @type {Array<DataResult|DataResultError>}
    */
-  results = [];
+  results: Array<DataResult | DataResultError> = [];
 
   /**
    * An object after the columns and values are mapped from
    * an RQLite response
    */
-  data = {};
+  data: Record<string, any> = {};
 
   /**
    * The data result constructor
    * @param {Array} result An API response individual result
    * @param {Array} [valuesIndex] The index to get the values from the result
    */
-  constructor(result, valuesIndex) {
+  constructor(result: RawDataResult, valuesIndex?: number) {
     if (typeof result !== 'object') {
       throw new Error('The result argument is required to be an object');
     }
@@ -52,8 +64,8 @@ export class DataResult {
         'The valuesIndex argument is required to be a finite number when provided'
       );
     }
-    this.time = parseFloat(result.time || 0.0);
-    this.rowsAffected = parseInt(result.rows_affected || 0, 10);
+    this.time = safeParseFloat(result.time, 0.0);
+    this.rowsAffected = safeParseInt(result.rows_affected, 0);
     this.lastInsertId = result.last_insert_id;
     // Map the values array to an object where columns are the properties
     if (Number.isFinite(valuesIndex)) {
@@ -105,7 +117,7 @@ export class DataResult {
    * Get the result data as plain object
    * @returns {Object} The data as an object
    */
-  toObject() {
+  toObject(): Record<string, any> {
     // Clone deep
     return JSON.parse(JSON.stringify(this.data));
   }
@@ -114,7 +126,7 @@ export class DataResult {
    * Map the data values to an array
    * @returns {Array}
    */
-  toArray() {
+  toArray(): any[] {
     return Object.values(this.data);
   }
 
@@ -122,7 +134,7 @@ export class DataResult {
    * Map the data properites to an array
    * @returns {String[]}
    */
-  toColumnsArray() {
+  toColumnsArray(): string[] {
     return Object.keys(this.data);
   }
 
@@ -130,7 +142,7 @@ export class DataResult {
    * Convert the result data to a JSON string
    * @returns {String} The JSON string for the data object
    */
-  toString() {
+  toString(): string {
     return JSON.stringify(this.data);
   }
 }

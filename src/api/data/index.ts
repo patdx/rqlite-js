@@ -3,8 +3,10 @@
  * as query and execute
  * @module api/data
  */
-import { ApiClient } from '../client';
+import { HttpRequestOptions } from '../../http-request';
+import { ApiClient, SqlQuery } from '../client';
 import { DataResults } from '../results';
+import { RawDataResults } from '../results/data-results';
 
 /**
  * The RQLite query api path
@@ -34,31 +36,24 @@ export const CONSISTENCY_LEVEL_STRONG = 'strong';
  */
 export const CONSISTENCY_LEVEL_WEAK = 'weak';
 
-/**
- * @typedef HttpRequestOptions
- * @type {import('../../http-request').HttpRequestOptions}
- */
+type DataRequestBaseOptions = {
+  /**
+   * If true return the raw http response from
+   * RQLite response
+   */
+  raw?: boolean;
+};
 
-/**
- * Data request base options
- * @typedef DataRequestBaseOptions
- * @type {Object}
- * @property {Boolean} [raw] If true return the raw http response from
- * RQLite response
- */
+type QueryRequestBaseOptions = {
+  /**
+   * The api consistency level
+   */
+  level?: string;
+};
 
-/**
- * Data query request base options
- * @typedef QueryRequestBaseOptions
- * @type {Object}
- * @property {String} level The api consistency level
- */
-
-/**
- * Data query request options
- * @typedef QueryRequestOptions
- * @type {HttpRequestOptions & DataRequestBaseOptions & QueryRequestBaseOptions}
- */
+type QueryRequestOptions = HttpRequestOptions &
+  DataRequestBaseOptions &
+  QueryRequestBaseOptions;
 
 /**
  * Data execute request options
@@ -68,14 +63,17 @@ export const CONSISTENCY_LEVEL_WEAK = 'weak';
 
 /**
  * Send an RQLite query API request to the RQLite server
- * @param {String} sql The SQL string to excute on the server
- * @param {DataRequestBaseOptions} [options={}] RQLite api options
  */
-function handleResponse(response, options = {}) {
-  const { raw } = options;
+function handleResponse(
+  response: {
+    body: RawDataResults;
+  },
+  options?: DataRequestBaseOptions
+): DataResults {
   const { body } = response;
-  if (raw) {
-    return response;
+  if (options?.raw) {
+    // TODO: lets type the raw version later
+    return response as any;
   }
   return new DataResults(body);
 }
@@ -89,7 +87,10 @@ export class DataApiClient extends ApiClient {
    * @param {String} sql The SQL string to excute on the server
    * @param {QueryRequestOptions} [options={}] RQLite api options
    */
-  async query(sql, options = {}) {
+  async query(
+    sql: SqlQuery | SqlQuery[],
+    options: QueryRequestOptions = {}
+  ): Promise<DataResults> {
     const { level } = options;
     let { useLeader } = options;
     // Weak and strong consistency will be redirect to the master anyway
@@ -106,8 +107,9 @@ export class DataApiClient extends ApiClient {
     // If round robin is true try and balance selects across hosts when
     // the master node is not queried directly
     if (!useLeader) {
-      this.setNextActiveHostIndex();
+      this._httpRequest.setNextActiveHostIndex();
     }
+
     return handleResponse(response, options);
   }
 
@@ -116,8 +118,11 @@ export class DataApiClient extends ApiClient {
    * @param {String} sql The SQL string to excute on the server
    * @param {ExecuteRequestOptions} [options={}] RQLite execute api options
    */
-  async execute(sql, options = {}) {
+  async execute(
+    sql: SqlQuery | SqlQuery[],
+    options = {}
+  ): Promise<DataResults> {
     const response = await super.post(PATH_EXECUTE, sql, options);
-    return handleResponse(response, options);
+    return handleResponse(response as any, options);
   }
 }

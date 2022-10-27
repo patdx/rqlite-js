@@ -31,7 +31,11 @@ export class StatusApiClient extends ApiClient {
    * @returns {HttpResponse} An HTTP response object
    */
   async status(options = {}) {
-    return super.get(PATH_STATUS, { useLeader: true, ...options });
+    return this._httpRequest.get({
+      uri: PATH_STATUS,
+      useLeader: true,
+      ...options,
+    });
   }
 
   /**
@@ -43,7 +47,7 @@ export class StatusApiClient extends ApiClient {
    * @returns {StatusAllHostsResponse[]} An array of http response for the provide hosts
    */
   async statusAllHosts(options = {}) {
-    const hosts = this.getHosts();
+    const hosts = this._httpRequest.getHosts();
     // Get the status for all of the hosts
     const promises = hosts.map(async (_host, activeHostIndex) => {
       const response = await this.status({ ...options, activeHostIndex });

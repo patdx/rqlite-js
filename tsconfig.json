@@ -9,7 +9,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "lib",
-    "types": ["node"],
+    "types": ["node", "mocha"],
     "declarationMap": true
   },
   "exclude": ["node_modules", "lib"],

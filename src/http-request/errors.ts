@@ -8,6 +8,8 @@
  * Error when max rediret attempts have been reached
  */
 export class ERROR_HTTP_REQUEST_MAX_REDIRECTS extends Error {
+  code: string;
+
   constructor(...args) {
     super(...args);
     this.name = this.constructor.name;

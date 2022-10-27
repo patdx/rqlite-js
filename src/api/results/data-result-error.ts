@@ -8,6 +8,8 @@
  * API call
  */
 export class DataResultError extends Error {
+  code: string;
+
   constructor(...args) {
     super(...args);
     this.name = this.constructor.name;
