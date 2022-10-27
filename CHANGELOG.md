@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.5.12](https://github.com/patdx/rqlite-js/compare/v2.5.11...v2.5.12) (2022-10-27)
+
+
+### Bug Fixes
+
+* error does not serialize correctly ([ab55a2a](https://github.com/patdx/rqlite-js/commit/ab55a2af1a4539d2bf5a9eec747715f993aab5e5))
+
 ### [2.5.11](https://github.com/patdx/rqlite-js/compare/v2.5.10...v2.5.11) (2022-10-27)
 
 
