@@ -1,4 +1,10 @@
 {
+  "hooks": {
+    "after:bump": "echo rebuild after bump && pnpm build"
+  },
+  "git": {
+    "requireCleanWorkingDir": false
+  },
   "npm": {
     "publishPath": "./dist/@patdx/rqlite-js"
   }

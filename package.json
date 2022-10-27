@@ -1,7 +1,7 @@
 {
   "name": "@patdx/rqlite-js",
   "type": "module",
-  "version": "2.5.12",
+  "version": "2.5.14",
   "publishConfig": {
     "access": "public"
   },
@@ -22,8 +22,7 @@
     "test-integrations": "mocha --require @babel/register --timeout 10000 lib/**/*.integration.js",
     "test-build": "mocha lib/test/unit/index.unit.js lib/**/*.unit.js || true",
     "test-build-integrations": "mocha --timeout 30000 lib/**/*.integration.js",
-    "do-publish": "npm publish dist",
-    "prepublishOnly": "npm run lint && npm run test-build && npm run build"
+    "x-prepublishOnly": "npm run lint && npm run test-build && npm run build"
   },
   "repository": {
     "type": "git",
