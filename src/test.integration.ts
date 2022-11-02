@@ -1,11 +1,10 @@
-import { assert } from 'chai';
 import http from 'http';
 import https from 'https';
 import { PATH_EXECUTE, PATH_QUERY } from './api/data';
 import { PATH_LOAD, PATH_BACKUP } from './api/backup';
 import { PATH_STATUS } from './api/status';
-// eslint-disable-next-line import/named
 import { DataApiClient, BackupApiClient, StatusApiClient } from '.';
+import { afterAll, assert, beforeAll, describe, it } from 'vitest';
 
 /**
  * The RQLite host for integration tests, which can be changed
@@ -43,8 +42,8 @@ describe('api status client', () => {
       throw e;
     }
   }
-
-  before('check RQLite Server ready', () => checkRqliteServerReady());
+  // 'check RQLite Server ready',
+  beforeAll(() => checkRqliteServerReady());
   describe('should get status response', () => {
     it(`should call ${HOST}${PATH_STATUS} and create table named foo`, async () => {
       const sql =
@@ -64,7 +63,8 @@ describe('api status client', () => {
 describe('api data client', () => {
   const dataApiClient = new DataApiClient(HOST, { httpAgent, httpsAgent });
   // eslint-disable-next-line prefer-arrow-callback
-  after('clean up data', async function cleanUpApiDataClientTests() {
+  // 'clean up data'
+  afterAll(async function cleanUpApiDataClientTests() {
     await dataApiClient.execute('DROP TABLE IF EXISTS foo');
   });
   describe('create table', () => {

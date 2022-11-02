@@ -68,7 +68,7 @@ export function querySuccess(options = {}) {
     url,
   } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
     .get(path)
     .query(query);
   if (auth) {
@@ -100,7 +100,7 @@ export function queryFailureHttpStatusCode(options = {}) {
     times,
   } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
     .get(path)
     .query(query);
   if (auth) {
@@ -126,7 +126,7 @@ export function queryFailureHttpStatusCode(options = {}) {
 export function queryFailureErrorCode(options = {}) {
   const { auth, path, query = queryAllowAll, errorCode, url } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
     .get(path)
     .query(query);
   if (auth) {
@@ -161,7 +161,7 @@ export function queryRedirectSuccess(options = {}) {
     url,
   } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
     .get(path)
     .query(query);
   if (auth) {
@@ -196,7 +196,7 @@ export function queryMultipleSuccess(options = {}) {
     url,
   } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
     .post(path, body)
     .query(query);
   if (auth) {

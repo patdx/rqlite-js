@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import { assert, beforeAll, describe, expect, it } from 'vitest';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
 import {
@@ -89,8 +89,9 @@ describe('http-request', () => {
   });
   describe('Method: HttpRequest.requestIsRetryable()', () => {
     const url = 'http://www.rqlite.com:4001';
-    let httpRequest;
-    before('create http request instance', () => {
+    let httpRequest: HttpRequest;
+    beforeAll(() => {
+      // 'create http request instance',
       httpRequest = new HttpRequest(url);
     });
     RETRYABLE_HTTP_METHODS.forEach((httpMethod) => {
@@ -213,8 +214,8 @@ describe('http-request', () => {
           // Circles back to original host on last retry
           queryFailureHttpStatusCode({ url: host1, path, statusCode }),
         ];
-        await assert.isRejected(
-          httpRequest.get({ uri: path }),
+        // assert.isRejected
+        await expect(httpRequest.get({ uri: path })).rejects.toThrow(
           `Request failed with status code ${statusCode}`
         );
         scopes.forEach((scope, i) => {
@@ -238,8 +239,7 @@ describe('http-request', () => {
         statusCode: HTTP_STATUS_CODE_NOT_RETRYABLE,
       });
       const scopeSuccess = querySuccess({ url: host2, path });
-      await assert.isRejected(
-        httpRequest.get({ uri: path }),
+      await expect(httpRequest.get({ uri: path })).rejects.toThrow(
         `Request failed with status code ${HTTP_STATUS_CODE_NOT_RETRYABLE}`
       );
       assert.isFalse(
@@ -293,7 +293,7 @@ describe('http-request', () => {
           // Circles back to original host on last retry
           queryFailureErrorCode({ url: host1, path, errorCode }),
         ];
-        await assert.isRejected(httpRequest.get({ uri: path }), errorCode);
+        await expect(httpRequest.get({ uri: path })).rejects.toThrow(errorCode);
         scopes.forEach((scope, i) => {
           assert.isTrue(
             scope.isDone(),
@@ -315,8 +315,7 @@ describe('http-request', () => {
         errorCode: ERROR_CODE_NOT_RETRYABLE,
       });
       const scopeSuccess = querySuccess({ url: host2, path });
-      await assert.isRejected(
-        httpRequest.get({ uri: path }),
+      await expect(httpRequest.get({ uri: path })).rejects.toThrow(
         ERROR_CODE_NOT_RETRYABLE
       );
       assert.isFalse(
@@ -480,8 +479,7 @@ describe('http-request', () => {
           // Circles back to original host on last retry
           executeFailureHttpStatusCode({ url: host1, path, body, statusCode }),
         ];
-        await assert.isRejected(
-          httpRequest.post({ uri: path, body }),
+        await expect(httpRequest.post({ uri: path, body })).rejects.toThrow(
           `Request failed with status code ${statusCode}`
         );
         scopes.forEach((scope, i) => {
@@ -507,8 +505,7 @@ describe('http-request', () => {
         statusCode: HTTP_STATUS_CODE_NOT_RETRYABLE,
       });
       const scopeSuccess = executeSuccess({ url: host2, path, body });
-      await assert.isRejected(
-        httpRequest.post({ uri: path, body }),
+      await expect(httpRequest.post({ uri: path, body })).rejects.toThrow(
         `Request failed with status code ${HTTP_STATUS_CODE_NOT_RETRYABLE}`
       );
       assert.isFalse(
@@ -565,8 +562,7 @@ describe('http-request', () => {
           // Circles back to original host on last retry
           executeFailureErrorCode({ url: host1, path, body, errorCode }),
         ];
-        await assert.isRejected(
-          httpRequest.post({ uri: path, body }),
+        await expect(httpRequest.post({ uri: path, body })).rejects.toThrow(
           errorCode
         );
         scopes.forEach((scope, i) => {
@@ -592,8 +588,7 @@ describe('http-request', () => {
         errorCode: ERROR_CODE_NOT_RETRYABLE,
       });
       const scopeSuccess = executeSuccess({ url: host2, path, body });
-      await assert.isRejected(
-        httpRequest.post({ uri: path, body }),
+      await expect(httpRequest.post({ uri: path, body })).rejects.toThrow(
         ERROR_CODE_NOT_RETRYABLE
       );
       assert.isFalse(

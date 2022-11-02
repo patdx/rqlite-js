@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import { assert, describe, it } from 'vitest';
 import { PATH_QUERY, PATH_EXECUTE } from '../data';
 import {
   querySuccess,
