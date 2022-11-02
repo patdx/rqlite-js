@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsup",
     "build-all": "tsup",
-    "build-clean": "rm -rf lib",
+    "build-clean": "rm -rf dist",
     "build-release": "npm run build && npm run test-build",
     "docker-build": "docker-compose -p rqlitejs build",
     "docker-down": "docker-compose -p rqlitejs down",
@@ -20,8 +20,9 @@
     "release": "npm run lint && npm run build-all && npm run test-build && release-it",
     "test": "vitest src/test/unit/index.unit.ts src/**/*.unit.ts",
     "test-integrations": "mocha --require @babel/register --timeout 10000 lib/**/*.integration.js",
-    "test-build": "mocha lib/test/unit/index.unit.js lib/**/*.unit.js || true",
-    "test-build-integrations": "mocha --timeout 30000 lib/**/*.integration.js",
+    "test-build": "echo NOT AVAILABLE YET && pnpm test",
+    "x-test-build": "mocha lib/test/unit/index.unit.js lib/**/*.unit.js || true",
+    "test-build-integrations": "vitest run --config vitest.integration.config.ts",
     "x-prepublishOnly": "npm run lint && npm run test-build && npm run build"
   },
   "repository": {
