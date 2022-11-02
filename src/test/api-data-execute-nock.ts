@@ -5,6 +5,11 @@
 import nock from 'nock';
 import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types';
 
+// NOTE: some issues found with:
+// CONTENT_TYPE_APPLICATION_JSON
+// where the actual request was basically correct and similar to CONTENT_TYPE_APPLICATION_JSON
+// but did not have a charset.
+
 /**
  * A nock HTTP request mock
  * @typedef {import('nock')} Nock
@@ -40,8 +45,8 @@ export function executeSuccess(options = {}) {
     url,
   } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
-    .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
+    .matchHeader('Content-Type', /^application\/json/i)
     .post(path, body);
   if (auth) {
     scope.basicAuth(auth);
@@ -59,11 +64,21 @@ export function executeSuccess(options = {}) {
  * @param {String} [options.url] The url for the request
  * @returns {Nock} A query api success mock
  */
-export function executeFailureHttpStatusCode(options = {}) {
+export function executeFailureHttpStatusCode(options: {
+  auth?: {
+    user: string;
+    pass?: string;
+  };
+  path: string;
+  body: any;
+  response?: any;
+  statusCode?: number;
+  url: string;
+}) {
   const { auth, body, path, response = {}, statusCode, url } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
-    .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
+    .matchHeader('Content-Type', /^application\/json/i)
     .post(path, body);
   if (auth) {
     scope.basicAuth(auth);
@@ -83,8 +98,8 @@ export function executeFailureHttpStatusCode(options = {}) {
 export function executeFailureErrorCode(options = {}) {
   const { auth, body, path, errorCode, url } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
-    .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
+    .matchHeader('Content-Type', /^application\/json/i)
     .post(path, body);
   if (auth) {
     scope.basicAuth(auth);
@@ -108,8 +123,8 @@ export function executeFailureErrorCode(options = {}) {
 export function executeRedirectSuccess(options = {}) {
   const { auth, body, path, redirectLocation, statusCode = 301, url } = options;
   const scope = nock(url)
-    .matchHeader('Accept', CONTENT_TYPE_APPLICATION_JSON)
-    .matchHeader('Content-Type', CONTENT_TYPE_APPLICATION_JSON)
+    .matchHeader('Accept', /^application\/json/i)
+    .matchHeader('Content-Type', /^application\/json/i)
     .post(path, body);
   if (auth) {
     scope.basicAuth(auth);

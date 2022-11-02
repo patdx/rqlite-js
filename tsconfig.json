@@ -9,7 +9,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "lib",
-    "types": ["node", "mocha"],
+    "types": ["node"],
     "declarationMap": true,
     "strict": true
   },

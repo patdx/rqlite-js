@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import { assert, describe, it } from 'vitest';
 import {
   querySuccess,
   QUERY_SUCCESS_RESPONSE,
@@ -9,7 +9,7 @@ import {
   executeSuccess,
   EXECUTE_SUCCESS_RESPONSE,
 } from '../../test/api-data-execute-nock';
-import DataApiClient, { PATH_QUERY, PATH_EXECUTE } from '.';
+import { DataApiClient, PATH_QUERY, PATH_EXECUTE } from '.';
 
 const HOST = 'http://www.rqlite.com:4001';
 

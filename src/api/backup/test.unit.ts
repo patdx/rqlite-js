@@ -1,4 +1,4 @@
-import { assert } from 'chai';
+import { assert, describe, it } from 'vitest';
 import {
   backupSuccess,
   BACKUP_SUCCESS_RESPONSE,
@@ -7,7 +7,7 @@ import {
   restoreSuccess,
   RESTORE_SUCCESS_RESPONSE,
 } from '../../test/backups/restore-nock';
-import BackupApiClient, { PATH_BACKUP, PATH_LOAD } from '.';
+import { BackupApiClient, PATH_BACKUP, PATH_LOAD } from '.';
 
 const HOST = 'http://www.rqlite.com:4001';
 
