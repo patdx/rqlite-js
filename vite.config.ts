@@ -15,9 +15,7 @@ export default defineConfig({
     // maxConcurrency: 1,
     // threads: false,
     // globals: true,
-    include: [
-      '**/*.{test,spec,unit,integration}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    include: ['**/*.{test,spec,unit}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test/unit/unit-test-setup.ts'],
     // ...
   },

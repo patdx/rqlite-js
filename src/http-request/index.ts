@@ -3,12 +3,8 @@
  * @module http-request
  */
 import axios, { AxiosError } from 'axios';
-import { parse as parseUrl } from 'url';
 import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
-import {
-  CONTENT_TYPE_APPLICATION_JSON,
-  // CONTENT_TYPE_APPLICATION_OCTET_STREAM,
-} from './content-types';
+import { CONTENT_TYPE_APPLICATION_JSON } from './content-types';
 import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
 import {
   RETRYABLE_ERROR_CODES,
@@ -491,13 +487,14 @@ export class HttpRequest {
    * @returns {Number} The found host index or -1 if not found
    */
   findHostIndex(host: string): number {
-    const parsedHostToFind = parseUrl(host);
+    const parsedHostToFind = new URL(host);
     return this.getHosts().findIndex((v) => {
-      const parsedHost = parseUrl(v);
+      const parsedHost = new URL(v);
+
       // Find a host where all the parsed fields match the requested host
-      return (['hostname', 'protocol', 'port', 'path'] as const).every(
-        (field) => parsedHostToFind[field] === parsedHost[field]
-      );
+      return (
+        ['hostname', 'protocol', 'port', 'pathname', 'search'] as const
+      ).every((field) => parsedHostToFind[field] === parsedHost[field]);
     });
   }
 
