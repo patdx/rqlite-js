@@ -35,9 +35,18 @@
     "nodejs"
   ],
   "author": "Justin Morant",
-  "license": "ISC",
+  "contributors": [
+    {
+      "name": "Justin Morant"
+    },
+    {
+      "name": "Patrick Miller",
+      "url": "https://github.com/patdx"
+    }
+  ],
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rqlite/rqlite-js/issues"
+    "url": "https://github.com/patdx/rqlite-js/issues"
   },
   "homepage": "https://github.com/patdx/rqlite-js",
   "devDependencies": {
