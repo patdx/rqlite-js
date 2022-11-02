@@ -1,10 +1,17 @@
 import http from 'http';
 import https from 'https';
-import { PATH_EXECUTE, PATH_QUERY } from './api/data';
-import { PATH_LOAD, PATH_BACKUP } from './api/backup';
-import { PATH_STATUS } from './api/status';
-import { DataApiClient, BackupApiClient, StatusApiClient } from '.';
-import { afterAll, assert, beforeAll, describe, it } from 'vitest';
+import { afterAll, afterEach, assert, beforeAll, describe, it } from 'vitest';
+
+import {
+  DataApiClient,
+  BackupApiClient,
+  StatusApiClient,
+  PATH_STATUS,
+  PATH_LOAD,
+  PATH_BACKUP,
+  PATH_EXECUTE,
+  PATH_QUERY,
+} from '../dist/@patdx/rqlite-js';
 
 /**
  * The RQLite host for integration tests, which can be changed
@@ -31,19 +38,23 @@ describe('api status client', () => {
     attempt = 0,
     wait = 500,
     maxAttempts = 10
-  ) {
+  ): Promise<any> {
     try {
       return await statusApiClient.statusAllHosts();
     } catch (e) {
       if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, wait));
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, wait);
+        });
         return checkRqliteServerReady(attempt + 1);
       }
       throw e;
     }
   }
   // 'check RQLite Server ready',
-  beforeAll(() => checkRqliteServerReady());
+  beforeAll(async () => {
+    await checkRqliteServerReady();
+  });
   describe('should get status response', () => {
     it(`should call ${HOST}${PATH_STATUS} and create table named foo`, async () => {
       const sql =
@@ -61,11 +72,14 @@ describe('api status client', () => {
 });
 
 describe('api data client', () => {
+  console.log('HELLO');
   const dataApiClient = new DataApiClient(HOST, { httpAgent, httpsAgent });
   // eslint-disable-next-line prefer-arrow-callback
   // 'clean up data'
-  afterAll(async function cleanUpApiDataClientTests() {
+  afterAll(async () => {
+    console.log('running AFTER_ALL');
     await dataApiClient.execute('DROP TABLE IF EXISTS foo');
+    console.log('finished running AFTER_ALL');
   });
   describe('create table', () => {
     it(`should call ${HOST}${PATH_EXECUTE} and create table named foo`, async () => {
@@ -206,7 +220,8 @@ describe('api backups client', () => {
   }
 
   // eslint-disable-next-line prefer-arrow-callback
-  after('clean up backup data', async function cleanUpApiBackupTests() {
+  afterEach(async () => {
+    // 'clean up backup data',
     await dataApiClient.execute('DROP TABLE IF EXISTS fooBackups');
     await dataApiClient.execute('DROP TABLE IF EXISTS fooRestore');
   });
