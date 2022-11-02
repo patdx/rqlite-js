@@ -28,6 +28,7 @@ export default defineConfig({
           'repository',
           'keywords',
           'author',
+          'contributors',
           'license',
           'bugs',
           'homepage'

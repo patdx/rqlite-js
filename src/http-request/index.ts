@@ -3,7 +3,6 @@
  * @module http-request
  */
 import axios, { AxiosError } from 'axios';
-import { stringify as stringifyQuery } from 'qs';
 import { parse as parseUrl } from 'url';
 import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
 import {
@@ -735,9 +734,14 @@ export class HttpRequest {
         timeout,
         httpsAgent,
         httpAgent,
-        paramsSerializer(params) {
-          return stringifyQuery(params, { arrayFormat: 'brackets' });
+        // https://github.com/axios/axios/issues/5058#issuecomment-1272107602
+        // qs.stringify({ a: ['b', 'c'] }, { arrayFormat: 'brackets' }) ==> config.paramsSerializer.indexes = false// 'a[]=b&a[]=c' // **Default**
+        paramsSerializer: {
+          indexes: false,
         },
+        // paramsSerializer(params) {
+        //   return stringifyQuery(params, { arrayFormat: 'brackets' });
+        // },
       });
       if (stream) {
         return response.data;
