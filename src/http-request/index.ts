@@ -2,7 +2,7 @@
  * Plain HTTP client to be used when creating RQLite specific API HTTP clients
  * @module http-request
  */
-// import axios, { AxiosError } from 'axios';
+
 import type { HTTPError } from 'ky';
 import { CONTENT_TYPE_APPLICATION_JSON } from './content-types';
 import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
@@ -97,7 +97,7 @@ export type HttpRequestOptions = {
   httpsAgent?: any;
 
   // added after checking typescript
-  exponentailBackoffBase?: number;
+  exponentialBackoffBase?: number;
   json?: boolean;
 };
 
@@ -112,7 +112,7 @@ export type HttpRequestOptions2 = {
   retryableErrorCodes?: Set<any> | string[];
   retryableStatusCodes?: Set<any> | number[];
   retryableHttpMethods?: Set<any> | string[];
-  exponentailBackoffBase?: number;
+  exponentialBackoffBase?: number;
   /** default headers */
   headers?: Record<string, string>;
 };
@@ -237,7 +237,7 @@ export class HttpRequest {
   /**
    * The exponential backoff base for retries
    */
-  exponentailBackoffBase?: number = 100;
+  exponentialBackoffBase?: number = 100;
 
   /**
    * Authentication Map
@@ -267,7 +267,7 @@ export class HttpRequest {
    * @param {Set|String[]} [options.retryableErrorCodes] The list of retryable error codes
    * @param {Set|Number[]} [options.retryableStatusCodes] The list of retryable http status codes
    * @param {Set|String[]} [options.retryableHttpMethods] The list of retryable http methods
-   * @param {Number} [options.exponentailBackoffBase] The value for exponentail backoff base
+   * @param {Number} [options.exponentialBackoffBase] The value for exponentail backoff base
    * for retry exponential backoff
    */
   constructor(hosts: string[] | string, options?: HttpRequestOptions2) {
@@ -282,7 +282,7 @@ export class HttpRequest {
       retryableErrorCodes,
       retryableStatusCodes,
       retryableHttpMethods,
-      exponentailBackoffBase,
+      exponentialBackoffBase,
       authentication,
       headers,
     } = options ?? {};
@@ -337,8 +337,8 @@ export class HttpRequest {
           : retryableHttpMethods
       );
     }
-    if (Number.isFinite(exponentailBackoffBase)) {
-      this.setExponentailBackoffBase(exponentailBackoffBase);
+    if (Number.isFinite(exponentialBackoffBase)) {
+      this.setExponentialBackoffBase(exponentialBackoffBase);
     }
   }
 
@@ -365,18 +365,18 @@ export class HttpRequest {
 
   /**
    * Set<any> the exponentail backoff base
-   * @param {Number} exponentailBackoffBase
+   * @param {Number} exponentialBackoffBase
    */
-  setExponentailBackoffBase(exponentailBackoffBase?: number) {
-    this.exponentailBackoffBase = exponentailBackoffBase;
+  setExponentialBackoffBase(exponentialBackoffBase?: number) {
+    this.exponentialBackoffBase = exponentialBackoffBase;
   }
 
   /**
    * Get the exponentail backoff base
    * @return {Number} The exponentail backoff base
    */
-  getExponentailBackoffBase(): number | undefined {
-    return this.exponentailBackoffBase;
+  getExponentialBackoffBase(): number | undefined {
+    return this.exponentialBackoffBase;
   }
 
   /**
@@ -693,7 +693,7 @@ export class HttpRequest {
       retryAttempt = 0,
       redirectAttempt = 0,
       attemptHostIndex,
-      exponentailBackoffBase = this.getExponentailBackoffBase(),
+      exponentialBackoffBase = this.getExponentialBackoffBase(),
       // httpAgent = this.getHttpAgent(),
       // httpsAgent = this.getHttpsAgent(),
     } = options ?? {};
@@ -865,7 +865,7 @@ export class HttpRequest {
       if (retryable && retryAttempt < retries) {
         const waitTime = getWaitTimeExponential(
           retryAttempt,
-          exponentailBackoffBase
+          exponentialBackoffBase
         );
         const delayPromise = new Promise((resolve) => {
           setTimeout(resolve, waitTime);

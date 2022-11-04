@@ -177,7 +177,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const scopeFailure = queryFailureHttpStatusCode({
@@ -201,7 +201,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const scopes = [
@@ -230,7 +230,7 @@ describe('http-request', () => {
       const host1 = 'http://www.rqlite.com:4001';
       const host2 = 'http://www.rqlite.com:4002';
       const httpRequest = new HttpRequest(`${host1},${host2}`, {
-        exponentailBackoffBase: 0,
+        exponentialBackoffBase: 0,
       });
       const path = '/test';
       const scopeFailure = queryFailureHttpStatusCode({
@@ -256,7 +256,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const scopeFailure = queryFailureErrorCode({
@@ -280,7 +280,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const scopes = [
@@ -306,7 +306,7 @@ describe('http-request', () => {
       const host1 = 'http://www.rqlite.com:4001';
       const host2 = 'http://www.rqlite.com:4002';
       const httpRequest = new HttpRequest(`${host1},${host2}`, {
-        exponentailBackoffBase: 0,
+        exponentialBackoffBase: 0,
       });
       const path = '/test';
       const scopeFailure = queryFailureErrorCode({
@@ -439,7 +439,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const body = ['INSERT INTO foo(name) VALUES("fiona")'];
@@ -465,7 +465,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const body = ['INSERT INTO foo(name) VALUES("fiona")'];
@@ -494,7 +494,7 @@ describe('http-request', () => {
       const host1 = 'http://www.rqlite.com:4001';
       const host2 = 'http://www.rqlite.com:4002';
       const httpRequest = new HttpRequest(`${host1},${host2}`, {
-        exponentailBackoffBase: 0,
+        exponentialBackoffBase: 0,
       });
       const path = '/test';
       const body = ['INSERT INTO foo(name) VALUES("fiona")'];
@@ -522,7 +522,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const body = ['INSERT INTO foo(name) VALUES("fiona")'];
@@ -548,7 +548,7 @@ describe('http-request', () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
-          exponentailBackoffBase: 0,
+          exponentialBackoffBase: 0,
         });
         const path = '/test';
         const body = ['INSERT INTO foo(name) VALUES("fiona")'];
@@ -577,7 +577,7 @@ describe('http-request', () => {
       const host1 = 'http://www.rqlite.com:4001';
       const host2 = 'http://www.rqlite.com:4002';
       const httpRequest = new HttpRequest(`${host1},${host2}`, {
-        exponentailBackoffBase: 0,
+        exponentialBackoffBase: 0,
       });
       const path = '/test';
       const body = ['INSERT INTO foo(name) VALUES("fiona")'];
