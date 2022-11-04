@@ -1,9 +1,13 @@
 {
   "hooks": {
-    "after:bump": "echo rebuild after bump && pnpm build"
+    "after:bump": [
+      "echo rebuild after bump && pnpm build",
+      "pnpm auto-changelog -p"
+    ]
   },
   "git": {
-    "requireCleanWorkingDir": false
+    "requireCleanWorkingDir": false,
+    "changelog": "pnpm auto-changelog --stdout --commit-limit false -u --template https://raw.githubusercontent.com/release-it/release-it/master/templates/changelog-compact.hbs"
   },
   "npm": {
     "publishPath": "./dist/@patdx/rqlite-js"
