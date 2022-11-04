@@ -160,10 +160,12 @@ export function queryRedirectSuccess(options = {}) {
     statusCode = 301,
     url,
   } = options;
+  console.log(options);
   const scope = nock(url)
     .matchHeader('Accept', /^application\/json/i)
     .get(path)
     .query(query);
+
   if (auth) {
     scope.basicAuth(auth);
   }

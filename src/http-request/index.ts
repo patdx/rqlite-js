@@ -2,10 +2,11 @@
  * Plain HTTP client to be used when creating RQLite specific API HTTP clients
  * @module http-request
  */
-import axios, { AxiosError } from 'axios';
-import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
+// import axios, { AxiosError } from 'axios';
+import type { HTTPError } from 'ky';
 import { CONTENT_TYPE_APPLICATION_JSON } from './content-types';
 import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
+import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
 import {
   RETRYABLE_ERROR_CODES,
   RETRYABLE_HTTP_METHODS,
@@ -486,7 +487,8 @@ export class HttpRequest {
    * @param {String} host A host to find in hosts
    * @returns {Number} The found host index or -1 if not found
    */
-  findHostIndex(host: string): number {
+  findHostIndex(host?: string | null): number {
+    if (typeof host !== 'string') return -1;
     const parsedHostToFind = new URL(host);
     return this.getHosts().findIndex((v) => {
       const parsedHost = new URL(v);
@@ -707,55 +709,119 @@ export class HttpRequest {
 
     uri = this.uriIsAbsolute(uri) ? uri : `${activeHost}/${cleanPath(uri)}`;
     try {
-      let auth;
+      let auth: { username: string; password: string } | undefined;
       if (this.authentication.size) {
         auth = {
           username: this.authentication.get('username'),
           password: this.authentication.get('password'),
         } as any;
       }
-      const response = await axios({
-        url: uri,
-        auth,
-        data: body,
-        maxRedirects: 0, // Handle redirects manually to allow reposting data
-        headers: createDefaultHeaders({
+
+      // const url = new URL(uri);
+      // url.search = new URLSearchParams(query).toString();
+
+      const headers = new Headers(
+        createDefaultHeaders({
           // default headers for client
           ...this.headers,
           // headers for fetch request
           ...options?.headers,
-        }),
-        responseType: stream ? 'stream' : 'json',
-        method: httpMethod,
-        params: query,
-        timeout,
-        httpsAgent,
-        httpAgent,
-        // https://github.com/axios/axios/issues/5058#issuecomment-1272107602
-        // qs.stringify({ a: ['b', 'c'] }, { arrayFormat: 'brackets' }) ==> config.paramsSerializer.indexes = false// 'a[]=b&a[]=c' // **Default**
-        paramsSerializer: {
-          indexes: false,
-        },
-        // paramsSerializer(params) {
-        //   return stringifyQuery(params, { arrayFormat: 'brackets' });
-        // },
-      });
-      if (stream) {
-        return response.data;
+        })
+      );
+
+      if (auth) {
+        headers.append(
+          'Authorization',
+          `Basic ${btoa(`${auth.username}:${auth.password}`)}`
+        );
       }
-      return {
-        body: response.data,
+
+      // Use dynamic import to support CJS output
+      const ky = await import('ky').then((m) => m.default);
+
+      const response = await ky(uri, {
+        ...(body ? { json: body } : {}),
+        headers,
+        method: httpMethod,
+        // fetch: nodeFetch,
+        hooks: {
+          beforeRequest: [
+            (request) => {
+              // console.log(`REQUEST TO: ${request.url}`);
+            },
+          ],
+        },
+        redirect: 'manual',
+        // req,
+        searchParams: query,
+        timeout,
+        // c,
+      });
+
+      if (stream) {
+        // TODO: have stream be a separate function to avoid
+        // typescript overloading
+        return response.body as any;
+      }
+
+      const finalOuput = {
+        body: (await response.json()) as any,
         status: response.status,
       };
+
+      return finalOuput;
+
+      // console.log(`finalOutput`, finalOuput);
+
+      // const response = await axios({
+      //   url: uri,
+      //   auth,
+      //   data: body,
+      //   maxRedirects: 0, // Handle redirects manually to allow reposting data
+      //   headers: createDefaultHeaders({
+      //     // default headers for client
+      //     ...this.headers,
+      //     // headers for fetch request
+      //     ...options?.headers,
+      //   }),
+      //   responseType: stream ? 'stream' : 'json',
+      //   method: httpMethod,
+      //   params: query,
+      //   timeout,
+      //   httpsAgent,
+      //   httpAgent,
+      //   // https://github.com/axios/axios/issues/5058#issuecomment-1272107602
+      //   // qs.stringify({ a: ['b', 'c'] }, { arrayFormat: 'brackets' }) ==> config.paramsSerializer.indexes = false// 'a[]=b&a[]=c' // **Default**
+      //   paramsSerializer: {
+      //     indexes: false,
+      //   },
+      //   // paramsSerializer(params) {
+      //   //   return stringifyQuery(params, { arrayFormat: 'brackets' });
+      //   // },
+      // });
+      // if (stream) {
+      //   return response.data;
+      // }
+      // return {
+      //   body: response.data,
+      //   status: response.status,
+      // };
     } catch (e) {
       // axios.isAxiosError(e)
-      const { response = {}, code: errorCode } = e as AxiosError;
-      const { status: responseStatus, headers: responseHeaders = {} } =
-        response as any;
+
+      // const { response = {}, code: errorCode } = e as AxiosError;
+      // const { status: responseStatus, headers: responseHeaders = {} } =
+      //   response as any;
+
+      const httpError = e as HTTPError;
+
+      const responseStatus = httpError?.response?.status;
+      const responseHeaders = httpError?.response?.headers;
+
       // Check if the error was a redirect
       const retryable = this.requestIsRetryable({
         statusCode: responseStatus,
-        errorCode,
+        errorCode: (e as any).code,
         httpMethod,
       });
       // Save the next active host index and pass it to retry manually
@@ -778,7 +844,7 @@ export class HttpRequest {
         }
         const location =
           typeof responseHeaders === 'object'
-            ? responseHeaders.location
+            ? responseHeaders.get('location')
             : undefined;
         // If we were asked to use the leader, but got redirect the leader moved so remember it
         if (useLeader) {
@@ -790,7 +856,7 @@ export class HttpRequest {
         }
         return this.fetch({
           ...options,
-          uri: location,
+          uri: location ?? undefined,
           attempt: attempt + 1,
           redirectAttempt: redirectAttempt + 1,
           attemptHostIndex: nextAttemptHostIndex,

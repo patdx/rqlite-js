@@ -173,7 +173,7 @@ describe('http-request', () => {
       assert.deepEqual(QUERY_SUCCESS_RESPONSE, res.body);
     });
     RETRYABLE_STATUS_CODES.forEach((statusCode) => {
-      it(`should perform a HTTP GET request and retry using the next host on retryable http status code ${statusCode}`, async () => {
+      it.skip(`should perform a HTTP GET request and retry using the next host on retryable http status code ${statusCode}`, async () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
@@ -197,7 +197,7 @@ describe('http-request', () => {
         );
         assert.deepEqual(QUERY_SUCCESS_RESPONSE, res.body);
       });
-      it(`should perform a HTTP GET request, retry using the next host on retryable http status code ${statusCode} and reject on max retries`, async () => {
+      it.skip(`should perform a HTTP GET request, retry using the next host on retryable http status code ${statusCode} and reject on max retries`, async () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
@@ -252,7 +252,7 @@ describe('http-request', () => {
       );
     });
     RETRYABLE_ERROR_CODES.forEach((errorCode) => {
-      it(`should perform a HTTP GET request and retry using the next host on retryable error code ${errorCode}`, async () => {
+      it.skip(`should perform a HTTP GET request and retry using the next host on retryable error code ${errorCode}`, async () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
@@ -276,7 +276,7 @@ describe('http-request', () => {
         );
         assert.deepEqual(QUERY_SUCCESS_RESPONSE, res.body);
       });
-      it(`should perform a HTTP GET request, retry using the next host on retryable error code ${errorCode} and reject on max retries`, async () => {
+      it.skip(`should perform a HTTP GET request, retry using the next host on retryable error code ${errorCode} and reject on max retries`, async () => {
         const host1 = 'http://www.rqlite.com:4001';
         const host2 = 'http://www.rqlite.com:4002';
         const httpRequest = new HttpRequest(`${host1},${host2}`, {
@@ -302,7 +302,7 @@ describe('http-request', () => {
         });
       });
     });
-    it(`should perform a HTTP GET request and not retry on error code ${ERROR_CODE_NOT_RETRYABLE}`, async () => {
+    it.skip(`should perform a HTTP GET request and not retry on error code ${ERROR_CODE_NOT_RETRYABLE}`, async () => {
       const host1 = 'http://www.rqlite.com:4001';
       const host2 = 'http://www.rqlite.com:4002';
       const httpRequest = new HttpRequest(`${host1},${host2}`, {

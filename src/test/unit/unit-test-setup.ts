@@ -2,15 +2,13 @@
  * Bootstrap for unit tests
  */
 import nock from 'nock';
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-} from 'vitest';
+import nodeFetch, { Headers, Request, Response } from 'node-fetch';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+
+globalThis.fetch = nodeFetch;
+globalThis.Headers = Headers;
+globalThis.Request = Request;
+globalThis.Response = Response;
 
 describe('empty file', () => {
   it('should be true', () => {
