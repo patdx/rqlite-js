@@ -3,7 +3,7 @@
  * @module test/api-data-query-nock
  */
 import nock from 'nock';
-import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types';
+// import { CONTENT_TYPE_APPLICATION_JSON } from '../http-request/content-types';
 
 /**
  * A nock HTTP request mock
@@ -160,7 +160,7 @@ export function queryRedirectSuccess(options = {}) {
     statusCode = 301,
     url,
   } = options;
-  console.log(options);
+
   const scope = nock(url)
     .matchHeader('Accept', /^application\/json/i)
     .get(path)

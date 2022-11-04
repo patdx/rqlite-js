@@ -694,8 +694,8 @@ export class HttpRequest {
       redirectAttempt = 0,
       attemptHostIndex,
       exponentailBackoffBase = this.getExponentailBackoffBase(),
-      httpAgent = this.getHttpAgent(),
-      httpsAgent = this.getHttpsAgent(),
+      // httpAgent = this.getHttpAgent(),
+      // httpsAgent = this.getHttpsAgent(),
     } = options ?? {};
     // Honor the supplied attemptHostIndex or get the active host
     const activeHost = Number.isFinite(attemptHostIndex)
@@ -744,13 +744,13 @@ export class HttpRequest {
         headers,
         method: httpMethod,
         // fetch: nodeFetch,
-        hooks: {
-          beforeRequest: [
-            (request) => {
-              // console.log(`REQUEST TO: ${request.url}`);
-            },
-          ],
-        },
+        // hooks: {
+        //   beforeRequest: [
+        //     (request) => {
+        //       // console.log(`REQUEST TO: ${request.url}`);
+        //     },
+        //   ],
+        // },
         redirect: 'manual',
         // req,
         searchParams: query,
