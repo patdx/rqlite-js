@@ -1,50 +1,76 @@
 # @patdx/rqlite-js &middot; [![npm version](https://img.shields.io/npm/v/@patdx/rqlite-js.svg?style=flat)](https://www.npmjs.com/package/rqlite-js)
 
+## How to install
+
+```
+npm install @patdx/rqlite-js ky
+```
+
 ## Changes from rqlite-js
 
-This is an opinionated fork with:
+This is an opinionated for of rqlite-js with:
 
-- TypeScript declarations
+- TypeScript
 - ES module output
-- All output bundled into a minimum number of files
+- All output bundled into one file
+- Based on `fetch()` (actually using the `ky` wrapper for fetch at the moment)
+- Intended to have compatibility with Cloudflare Workers, Browsers and other
+  non-Node environments.
 
-### TODO
-
-- Switch from classes to plain objects for better tree shaking and more predictable serialization
-- Pass default headers when creating the client
-- replace axios with a fetch implementation
-- get tests working
-- replace qs with URLSearchParams
+It is still highly experimental (and will probably remain that way). Many of the
+tests are passing however some tests especially related to failover features as
+redirects/etc are not passing yet.
 
 ---
 
  <!-- &middot; [![Build Status](https://travis-ci.org/rqlite/rqlite-js.svg?branch=master)](https://travis-ci.org/rqlite/rqlite-js) &middot; [![Google Group](https://img.shields.io/badge/Google%20Group--blue.svg)](https://groups.google.com/group/rqlite) -->
 
-A promise based client library for [rqlite](https://github.com/rqlite/rqlite), the lightweight, distributed database built on SQLite. This package is designed to provide javascript classes with interfaces that line up with RQLite API endpoints. Please note that there is no code in this package for writing SQL queries. There are other Javascript SQL generator libraries such as [sequel](https://www.npmjs.com/package/sequel) which can be used to create the SQLite query strings. You are welcome to use one of those libraries or write your own SQL queries directly in your code.
+A promise based client library for [rqlite](https://github.com/rqlite/rqlite),
+the lightweight, distributed database built on SQLite. This package is designed
+to provide javascript classes with interfaces that line up with RQLite API
+endpoints. Please note that there is no code in this package for writing SQL
+queries. There are other Javascript SQL generator libraries such as
+[sequel](https://www.npmjs.com/package/sequel) which can be used to create the
+SQLite query strings. You are welcome to use one of those libraries or write
+your own SQL queries directly in your code.
 
 ## Features
 
 - Automatically follow 301 redirects from replicates to leader node
-- Round robin load balancing of leader node and all replicate nodes for query api requests
-- HTTP Keepalive support through http and https agents when initializing clients or on individual requests see [Client options](#client-options)
+- Round robin load balancing of leader node and all replicate nodes for query
+  api requests
+- HTTP Keepalive support through http and https agents when initializing clients
+  or on individual requests see [Client options](#client-options)
 - Unit and integration tests for contributors
 
 ## DataApiClient
 
-The data API client will allow you to access the [data API endpoints](https://github.com/rqlite/rqlite/blob/master/DOC/DATA_API.md) of RQLite such as `query` and `execute`. All data methods will return a DataResults instance which is an array of DataResult instances. The DataResult instances are designed to abstract working with the response body from RQLite data endpoints. If you want to work with the raw HTTP response instead of using the DataResults the options accept a raw options which can be set to true. This is covered in the examples below.
+The data API client will allow you to access the
+[data API endpoints](https://github.com/rqlite/rqlite/blob/master/DOC/DATA_API.md)
+of RQLite such as `query` and `execute`. All data methods will return a
+DataResults instance which is an array of DataResult instances. The DataResult
+instances are designed to abstract working with the response body from RQLite
+data endpoints. If you want to work with the raw HTTP response instead of using
+the DataResults the options accept a raw options which can be set to true. This
+is covered in the examples below.
 
 ### DataApiClient Methods
 
-The follow methods are available on the DataApiClient including their method signatures. Both the query and execute methods return a DataResults instance which provides methods for handling the RQLite response body states. In the case of a query there will only ever be one result in the DataResults.
+The follow methods are available on the DataApiClient including their method
+signatures. Both the query and execute methods return a DataResults instance
+which provides methods for handling the RQLite response body states. In the case
+of a query there will only ever be one result in the DataResults.
 
-- DataApiClient.query(sql, options) - Single query SQL statments sent via HTTP get (Note, if you pass an array it will call execute internally)
+- DataApiClient.query(sql, options) - Single query SQL statments sent via HTTP
+  get (Note, if you pass an array it will call execute internally)
 - DataApiClient.execute(sql, options) - Multiple SQL statments
 
 ## DATA API Usage
 
 ### CREATE TABLE Example
 
-The code sample shows how you would connect to a rqlite server and create a table.
+The code sample shows how you would connect to a rqlite server and create a
+table.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -89,7 +115,8 @@ try {
 
 ### Multiple QUERY Example
 
-The code sample shows how would connect to a rqlite server insert a row then select the row.
+The code sample shows how would connect to a rqlite server insert a row then
+select the row.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -164,7 +191,9 @@ try {
 
 ### Using transactions Example
 
-The code sample shows how would connect to a rqlite and run multiple insert queries within a transaction [transactions](https://github.com/rqlite/rqlite/blob/master/DOC/DATA_API.md#transactions).
+The code sample shows how would connect to a rqlite and run multiple insert
+queries within a transaction
+[transactions](https://github.com/rqlite/rqlite/blob/master/DOC/DATA_API.md#transactions).
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -202,7 +231,9 @@ try {
 
 ### Multiple QUERY Example With Consistency
 
-The code sample shows how would connect to a rqlite and run multiple select queries with [strong consistency](https://github.com/rqlite/rqlite/blob/master/DOC/CONSISTENCY.md).
+The code sample shows how would connect to a rqlite and run multiple select
+queries with
+[strong consistency](https://github.com/rqlite/rqlite/blob/master/DOC/CONSISTENCY.md).
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -237,7 +268,8 @@ try {
 
 ### Authentication
 
-Authentication can be set using the authentication property on the DataApiClient options.
+Authentication can be set using the authentication property on the DataApiClient
+options.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -276,7 +308,9 @@ try {
 
 ### Client options
 
-Multiple hosts can be provided using the construtor for the data api client. For greater performance when making http requests it is often useful to provide an http and https agent to the client through options.
+Multiple hosts can be provided using the construtor for the data api client. For
+greater performance when making http requests it is often useful to provide an
+http and https agent to the client through options.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -295,7 +329,13 @@ const dataApiClient = new DataApiClient(
 
 ### Retrys
 
-All http requests are retried with exponential backoff up to the number of hosts times 3. Each retry tries the next host in the rotation. To see the http status codes, error codes and http methods which cause a retry have a look at [es6/http-request/retryable.js](es6/http-request/retryable.js). When creating an instance you can supply your own Set or Array of replacement values. To manually disable all retry logic provide the contructor an entries properties with the value 0.
+All http requests are retried with exponential backoff up to the number of hosts
+times 3. Each retry tries the next host in the rotation. To see the http status
+codes, error codes and http methods which cause a retry have a look at
+[es6/http-request/retryable.js](es6/http-request/retryable.js). When creating an
+instance you can supply your own Set or Array of replacement values. To manually
+disable all retry logic provide the contructor an entries properties with the
+value 0.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
@@ -316,4 +356,5 @@ const dataApiClient = new DataApiClient(
 
 ## Testing
 
-Please see the [docs/test/README.md](docs/test/README.md) for more information on testing for use by contributors.
+Please see the [docs/test/README.md](docs/test/README.md) for more information
+on testing for use by contributors.
