@@ -89,12 +89,12 @@ export type HttpRequestOptions = {
    * An option http agent, useful for
    * keepalive pools using plain HTTP
    */
-  httpAgent?: import('node:http').Agent;
+  httpAgent?: any;
   /**
    * An option http agent, useful
    * for keepalive pools using SSL
    */
-  httpsAgent?: import('node:https').Agent;
+  httpsAgent?: any;
 
   // added after checking typescript
   exponentailBackoffBase?: number;
@@ -107,8 +107,8 @@ export type HttpRequestOptions2 = {
     password?: string;
   };
   activeHostRoundRobin?: boolean;
-  httpAgent?: import('node:http').Agent;
-  httpsAgent?: import('node:https').Agent;
+  httpAgent?: any;
+  httpsAgent?: any;
   retryableErrorCodes?: Set<any> | string[];
   retryableStatusCodes?: Set<any> | number[];
   retryableHttpMethods?: Set<any> | string[];
@@ -200,14 +200,14 @@ export class HttpRequest {
   hosts: string[] = [];
 
   /**
-   * @type {import('node:http').Agent} The http agent if it is set
+   * The http agent if it is set
    */
-  httpAgent?: import('node:http').Agent;
+  httpAgent?: any;
 
   /**
-   * @type {import('node:https').Agent} The https agent if it is set
+   * The https agent if it is set
    */
-  httpsAgent?: import('node:https').Agent;
+  httpsAgent?: any;
 
   /**
    * The host list index of the leader node defaults
@@ -260,9 +260,9 @@ export class HttpRequest {
    * @param {String} [options.authentication.password] The host authentication password
    * @param {Boolean} [options.activeHostRoundRobin=true] If true this.setNextActiveHostIndex()
    * will perform a round robin when called
-   * @param {import('node:http').Agent} [options.httpAgent] An option http agent, useful for
+   * @param {any} [options.httpAgent] An option http agent, useful for
    * keepalive pools using plain HTTP
-   * @param {import('node:https').Agent} [options.httpsAgent] An option http agent, useful
+   * @param {any} [options.httpsAgent] An option http agent, useful
    * for keepalive pools using SSL
    * @param {Set|String[]} [options.retryableErrorCodes] The list of retryable error codes
    * @param {Set|Number[]} [options.retryableStatusCodes] The list of retryable http status codes
@@ -429,33 +429,33 @@ export class HttpRequest {
 
   /**
    * Set<any> an http agent which is useful for http keepalive requests
-   * @param {import('node:http').Agent} httpAgent An http agent
+   * @param {any} httpAgent An http agent
    */
-  setHttpAgent(httpAgent: import('node:http').Agent) {
+  setHttpAgent(httpAgent: any) {
     this.httpAgent = httpAgent;
   }
 
   /**
    * Get the Set<any> http agent
-   * @returns {import('node:http').Agent|undefined} The https agent if it is set
+   * @returns {any|undefined} The https agent if it is set
    */
-  getHttpAgent(): import('node:http').Agent | undefined {
+  getHttpAgent(): any | undefined {
     return this.httpAgent;
   }
 
   /**
    * Set<any> an https agent which is useful for https keepalive requests
-   * @param {import('node:https').Agent} httpsAgent An https agent
+   * @param {any} httpsAgent An https agent
    */
-  setHttpsAgent(httpsAgent: import('node:https').Agent) {
+  setHttpsAgent(httpsAgent: any) {
     this.httpsAgent = httpsAgent;
   }
 
   /**
    * Get the Set<any> https agent
-   * @returns {import('node:https').Agent|undefined} The https agent if it is set
+   * @returns {any|undefined} The https agent if it is set
    */
-  getHttpsAgent(): import('node:https').Agent | undefined {
+  getHttpsAgent(): any | undefined {
     return this.httpsAgent;
   }
 
