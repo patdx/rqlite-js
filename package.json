@@ -70,8 +70,11 @@
     "eslint-plugin-babel": "5.3.1",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-mocha": "10.1.0",
+    "ky": "0.32.2",
+    "ky-universal": "0.11.0",
     "lodash": "4.17.21",
     "nock": "^13.2.4",
+    "node-fetch": "3.2.10",
     "prettier": "2.7.1",
     "prettier-package-json": "2.7.0",
     "release-it": "15.5.0",
@@ -82,6 +85,6 @@
     "vitest": "0.24.5"
   },
   "peerDependencies": {
-    "axios": "*"
+    "ky": "*"
   }
 }

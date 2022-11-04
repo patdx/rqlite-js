@@ -18,5 +18,7 @@ export default defineConfig({
     include: ['**/*.{test,spec,unit}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     setupFiles: ['src/test/unit/unit-test-setup.ts'],
     // ...
+    ui: true,
+    open: false,
   },
 });

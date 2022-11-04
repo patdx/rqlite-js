@@ -21,8 +21,11 @@ specifiers:
   eslint-plugin-babel: 5.3.1
   eslint-plugin-import: 2.26.0
   eslint-plugin-mocha: 10.1.0
+  ky: 0.32.2
+  ky-universal: 0.11.0
   lodash: 4.17.21
   nock: ^13.2.4
+  node-fetch: 3.2.10
   prettier: 2.7.1
   prettier-package-json: 2.7.0
   release-it: 15.5.0
@@ -53,8 +56,11 @@ devDependencies:
   eslint-plugin-babel: 5.3.1_eslint@8.26.0
   eslint-plugin-import: 2.26.0_5aea5dp4n23mfv4y2mmjxole3e
   eslint-plugin-mocha: 10.1.0_eslint@8.26.0
+  ky: 0.32.2
+  ky-universal: 0.11.0_ky@0.32.2
   lodash: 4.17.21
   nock: 13.2.9
+  node-fetch: 3.2.10
   prettier: 2.7.1
   prettier-package-json: 2.7.0
   release-it: 15.5.0
@@ -1845,6 +1851,13 @@ packages:
       sirv: 2.0.2
     dev: true
 
+  /abort-controller/3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+    dependencies:
+      event-target-shim: 5.0.1
+    dev: true
+
   /acorn-jsx/5.3.2_acorn@7.4.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -3437,6 +3450,11 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /event-target-shim/5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+    dev: true
+
   /execa/5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
@@ -4689,6 +4707,26 @@ packages:
   /kind-of/6.0.3:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /ky-universal/0.11.0_ky@0.32.2:
+    resolution: {integrity: sha512-65KyweaWvk+uKKkCrfAf+xqN2/epw1IJDtlyCPxYffFCMR8u1sp2U65NtWpnozYfZxQ6IUzIlvUcw+hQ82U2Xw==}
+    engines: {node: '>=14.16'}
+    peerDependencies:
+      ky: '>=0.31.4'
+      web-streams-polyfill: '>=3.2.1'
+    peerDependenciesMeta:
+      web-streams-polyfill:
+        optional: true
+    dependencies:
+      abort-controller: 3.0.0
+      ky: 0.32.2
+      node-fetch: 3.2.10
+    dev: true
+
+  /ky/0.32.2:
+    resolution: {integrity: sha512-eBJeF6IXNwX5rksdwBrE2rIJrU2d84GoTvdM7OmmTIwUVXEMd72wIwvT+nyhrqtv7AzbSNsWz7yRsHgVhj1uog==}
+    engines: {node: '>=14.16'}
     dev: true
 
   /latest-version/7.0.0:
