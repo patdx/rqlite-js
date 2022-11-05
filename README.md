@@ -277,7 +277,7 @@ import { DataApiClient } from 'rqlite-js';
 const username = 'rqliteUsername';
 const password = 'rqlitePassword';
 const dataApiClient = new DataApiClient('http://localhost:4001', {
-  authentication: { username, password },
+  auth: { username, password },
 });
 try {
   const sql = [

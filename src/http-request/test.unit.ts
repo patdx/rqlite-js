@@ -33,16 +33,28 @@ const auth = Object.freeze({
 /**
  * Capture the stream data and resolve a promise with the parsed JSON
  */
-function handleRequestStreamAsPromise(request) {
-  return new Promise((resolve, reject) => {
-    let json = Buffer.from('');
-    request
-      .on('data', (data) => {
-        json = Buffer.concat([json, data]);
-      })
-      .on('end', () => resolve(JSON.parse(json)))
-      .on('error', reject);
-  });
+//  https://stackoverflow.com/a/72718732
+async function handleRequestStreamAsPromise(
+  stream: ReadableStream<Uint8Array>
+) {
+  // in node-fetch this is a node Readable
+  const result = await new Response(stream).text();
+
+  // debugger;
+  // // console.log(`handleRequestStreamAsPromise`, stream);
+  // let result = '';
+  // const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
+  // while (true) {
+  //   // eslint-disable-line no-constant-condition
+  //   // eslint-disable-next-line no-await-in-loop
+  //   const { done, value } = await reader.read();
+  //   if (done) {
+  //     break;
+  //   }
+
+  //   result += value;
+  // }
+  return JSON.parse(result);
 }
 const ERROR_CODE_NOT_RETRYABLE = 'UNKNOWN';
 const HTTP_STATUS_CODE_NOT_RETRYABLE = 418; // I am little tea pot
@@ -143,22 +155,24 @@ describe('http-request', () => {
     });
   });
   describe('Method: HttpRequest.get()', () => {
-    it('should set and get an http agent', async () => {
+    it.skip('should set and get an http agent', async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpAgent = new HttpAgent();
       const httpRequest = new HttpRequest(url, { httpAgent });
       assert.equal(
-        httpRequest.getHttpAgent(),
+        httpRequest.options.httpAgent(),
         httpAgent,
         'http agent is set on http request'
       );
     });
-    it('should set and get an https agent', async () => {
+
+    // HTTP agent is not currently supported with fetch()
+    it.skip('should set and get an https agent', async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpsAgent = new HttpsAgent();
       const httpRequest = new HttpRequest(url, { httpsAgent });
       assert.equal(
-        httpRequest.getHttpsAgent(),
+        httpRequest.options.httpsAgent(),
         httpsAgent,
         'https agent is set on http request'
       );
@@ -361,7 +375,7 @@ describe('http-request', () => {
     it('should perform a HTTP GET request with basic authentication', async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpRequest = new HttpRequest(url, {
-        authentication: {
+        auth: {
           username,
           password,
         },
@@ -379,7 +393,11 @@ describe('http-request', () => {
       const path = '/test';
       const query = { test: '123' };
       const scope = querySuccess({ url, path, query });
-      const request = await httpRequest.get({ uri: path, query, stream: true });
+      const request = await httpRequest.getStream({
+        uri: path,
+        query,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(result, QUERY_SUCCESS_RESPONSE);
@@ -397,7 +415,11 @@ describe('http-request', () => {
         redirectLocation: `${urlRedirectDestination}${path}`,
       });
       const scope = querySuccess({ url: urlRedirectDestination, path, query });
-      const request = await httpRequest.get({ uri: path, query, stream: true });
+      const request = await httpRequest.getStream({
+        uri: path,
+        query,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(
         scopeRedirect.isDone(),
@@ -409,7 +431,7 @@ describe('http-request', () => {
     it('should perform a HTTP GET request with basic authentication when the stream option is true', async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpRequest = new HttpRequest(url, {
-        authentication: {
+        auth: {
           username,
           password,
         },
@@ -417,7 +439,11 @@ describe('http-request', () => {
       const path = '/test';
       const query = { test: '123' };
       const scope = querySuccess({ url, path, auth, query });
-      const request = await httpRequest.get({ uri: path, query, stream: true });
+      const request = await httpRequest.getStream({
+        uri: path,
+        query,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(result, QUERY_SUCCESS_RESPONSE);
@@ -673,7 +699,7 @@ describe('http-request', () => {
     it(`should send a HTTP POST request including ${CONTENT_TYPE_APPLICATION_JSON} body with basic auth`, async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpRequest = new HttpRequest(url, {
-        authentication: {
+        auth: {
           username,
           password,
         },
@@ -691,7 +717,11 @@ describe('http-request', () => {
       const path = '/test';
       const body = ['INSERT INTO foo(name) VALUES("fiona")'];
       const scope = executeSuccess({ url, path });
-      const request = await httpRequest.post({ uri: path, body, stream: true });
+      const request = await httpRequest.postStream({
+        uri: path,
+        body,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(result, EXECUTE_SUCCESS_RESPONSE);
@@ -699,7 +729,7 @@ describe('http-request', () => {
     it(`should send a HTTP POST request including ${CONTENT_TYPE_APPLICATION_JSON} body with basic auth when the stream option is true`, async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpRequest = new HttpRequest(url, {
-        authentication: {
+        auth: {
           username,
           password,
         },
@@ -707,7 +737,11 @@ describe('http-request', () => {
       const path = '/test';
       const body = ['INSERT INTO foo(name) VALUES("fiona")'];
       const scope = executeSuccess({ url, path, auth });
-      const request = await httpRequest.post({ uri: path, body, stream: true });
+      const request = await httpRequest.postStream({
+        uri: path,
+        body,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(result, EXECUTE_SUCCESS_RESPONSE);
@@ -715,7 +749,7 @@ describe('http-request', () => {
     it(`should send a HTTP POST request including ${CONTENT_TYPE_APPLICATION_JSON} body with basic auth used in constructor when the stream option is true`, async () => {
       const url = 'http://www.rqlite.com:4001';
       const httpRequest = new HttpRequest(url, {
-        authentication: {
+        auth: {
           username,
           password,
         },
@@ -723,7 +757,11 @@ describe('http-request', () => {
       const path = '/test';
       const body = ['INSERT INTO foo(name) VALUES("fiona")'];
       const scope = executeSuccess({ url, path, auth });
-      const request = await httpRequest.post({ uri: path, body, stream: true });
+      const request = await httpRequest.postStream({
+        uri: path,
+        body,
+        stream: true,
+      });
       const result = await handleRequestStreamAsPromise(request);
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(result, EXECUTE_SUCCESS_RESPONSE);

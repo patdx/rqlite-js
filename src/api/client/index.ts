@@ -2,40 +2,30 @@
  * Base API client for RQLite which abstracts the HTTP calls
  * @module api/client
  */
-import {
-  HttpRequest,
-  HttpRequestOptions,
-  HttpRequestOptions2,
-} from '../../http-request';
+import { HttpRequest, HttpRequestOptions } from '../../http-request';
 import {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
 } from '../../http-request/http-methods';
 
 type QueryOptions = {
+  /** The consistency level */
   level?: string;
+  /** Pretty print the response body */
   pretty?: boolean;
+  /** Provide query timings */
   timings?: boolean;
+  /** Treat all commands in the request as a single transaction for RQLite v5 and higher */
   atomic?: boolean;
+  /** Treat all commands in the request as a single transaction for RQLite v4 and lower */
   transaction?: boolean;
-
-  useLeader?: boolean;
 };
 
 /**
  * Create the base HTTP query options from RQLite API options
- * @param {Object} [options={}] The RQLite API options
- * @param {String} [options.level] The consistency level
- * @param {String} [options.pretty] Pretty print the response body
- * @param {String} [options.timings] Provide query timings
- * @param {String} [options.atomic] Treat all commands in the request as a single transaction
- * for RQLite v5 and higher
- * @param {String} [options.transaction] Treat all commands in the request as a single transaction
- * for RQLite v4 and lower
- * @returns {Object} The HTTP query
  */
-export function createQuery(options: QueryOptions = {}) {
-  const { level, pretty, timings, atomic, transaction } = options;
+export function createQuery(options?: QueryOptions): QueryOptions {
+  const { level, pretty, timings, atomic, transaction } = options ?? {};
 
   // Remove all undefined values
   const query = { level, pretty, timings, atomic, transaction };
@@ -63,7 +53,7 @@ export type SqlQuery =
 export class ApiClient {
   _httpRequest: HttpRequest;
 
-  constructor(hosts: string[] | string, options: HttpRequestOptions2 = {}) {
+  constructor(hosts: string[] | string, options?: HttpRequestOptions) {
     this._httpRequest = new HttpRequest(hosts, options);
   }
 

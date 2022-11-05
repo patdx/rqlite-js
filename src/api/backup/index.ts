@@ -2,7 +2,7 @@
  * Backup api client to perform RQLite back and load operations
  * @module api/backup
  */
-import { HttpRequest } from '../../http-request';
+import { HttpRequest, HttpRequestOptions } from '../../http-request';
 import {
   CONTENT_TYPE_APPLICATION_OCTET_STREAM,
   CONTENT_TYPE_TEXT_PLAIN,
@@ -31,14 +31,23 @@ export const BACKUP_DATA_FORMAT_DUMP = 'dump';
 /**
  * Backup api client to perform RQLite back up and load operations
  */
-export class BackupApiClient extends HttpRequest {
+export class BackupApiClient {
+  _httpRequest: HttpRequest;
+
+  constructor(hosts: string[] | string, options?: HttpRequestOptions) {
+    this._httpRequest = new HttpRequest(hosts, options);
+  }
+
   /**
    * Perform a SQL dump backup from the RQLite server
-   * @param {String} [format=BACKUP_DATA_FORMAT_DUMP] The backup data format
-   * @returns {Stream} The response stream
+   * @param The backup data format
+   * @returns The response stream
    */
-  async backup(format = BACKUP_DATA_FORMAT_DUMP) {
-    const stream = super.get({
+  async backup(
+    format: string = BACKUP_DATA_FORMAT_DUMP
+  ): Promise<ReadableStream<Uint8Array>> {
+    const stream = await this._httpRequest.fetchRaw({
+      httpMethod: 'GET',
       headers: {
         // Always sends application/octet-stream from the server in RQLite v4.x
         Accept: CONTENT_TYPE_APPLICATION_OCTET_STREAM,
@@ -49,17 +58,22 @@ export class BackupApiClient extends HttpRequest {
       uri: PATH_BACKUP,
       useLeader: true,
     });
-    return stream;
+
+    return stream.body!;
   }
 
   /**
    * Perform a SQL restore by sending data the RQLite server
-   * @param {Buffer|String} data The data to be loaded
-   * @param {String} [format=BACKUP_DATA_FORMAT_SQL] The backup data format
-   * @returns {Stream} The response stream
+   * @param data The data to be loaded
+   * @param format The backup data format
+   * @returns The response stream
    */
-  async load(data: Buffer | string, format = BACKUP_DATA_FORMAT_SQL) {
-    return super.post({
+  async load(
+    data: Buffer | string,
+    format = BACKUP_DATA_FORMAT_SQL
+  ): Promise<ReadableStream<Uint8Array>> {
+    const response = await this._httpRequest.fetchRaw({
+      httpMethod: 'POST',
       body: data,
       headers: {
         // eslint-disable-next-line max-len
@@ -73,5 +87,7 @@ export class BackupApiClient extends HttpRequest {
       uri: PATH_LOAD,
       useLeader: true,
     });
+
+    return response.body!;
   }
 }
