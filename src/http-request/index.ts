@@ -2,8 +2,8 @@
  * Plain HTTP client to be used when creating RQLite specific API HTTP clients
  * @module http-request
  */
-// import axios, { AxiosError } from 'axios';
-import type { HTTPError } from 'ky';
+
+import type { HTTPError, KyResponse } from 'ky';
 import { CONTENT_TYPE_APPLICATION_JSON } from './content-types';
 import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
 import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
@@ -33,7 +33,7 @@ export type HttpRequestOptions = {
    * The HTTP method for the request
    * i.e. GET or POST
    */
-  httpMethod?: string;
+  httpMethod?: 'GET' | 'POST';
   /**
    * An object with the query to send with the HTTP request
    */
@@ -41,6 +41,8 @@ export type HttpRequestOptions = {
   /**
    * When true the returned value is a request object with
    * stream support instead of a request-promise result
+   *
+   * @deprecated use the fetchRaw and read the response.body instead
    */
   stream?: boolean;
   /**
@@ -96,31 +98,62 @@ export type HttpRequestOptions = {
    */
   httpsAgent?: any;
 
-  // added after checking typescript
-  exponentailBackoffBase?: number;
+  /**
+   * The exponential backoff base for retries
+   */
+  exponentialBackoffBase?: number;
+
+  /**
+   * send body as json or raw
+   * usually we use json mode, but for backup restore, for example
+   * we send it exactly
+   */
   json?: boolean;
+
+  /**
+   * Whether or not the setNextActiveHostIndex() should
+   * perform a round robin strategy
+   */
+  activeHostRoundRobin?: boolean;
+
+  retryableErrorCodes?: Set<string> | string[];
+  retryableStatusCodes?: Set<number> | number[];
+  retryableHttpMethods?: Set<string> | string[];
 };
 
-export type HttpRequestOptions2 = {
-  authentication?: {
-    username?: string;
-    password?: string;
-  };
-  activeHostRoundRobin?: boolean;
-  httpAgent?: any;
-  httpsAgent?: any;
-  retryableErrorCodes?: Set<any> | string[];
-  retryableStatusCodes?: Set<any> | number[];
-  retryableHttpMethods?: Set<any> | string[];
-  exponentailBackoffBase?: number;
-  /** default headers */
-  headers?: Record<string, string>;
+export type HttpRequestOptionsNormalized = Omit<
+  HttpRequestOptions,
+  'retryableErrorCodes' | 'retryableStatusCodes' | 'retryableHttpMethods'
+> & {
+  retryableErrorCodes: Set<string>;
+  retryableStatusCodes: Set<number>;
+  retryableHttpMethods: Set<string>;
 };
 
 /**
  * The default timeout value
  */
-export const DEAULT_TIMEOUT = 30000;
+export const DEFAULT_TIMEOUT = 30000;
+
+// TODO: separate into options for
+// ky, general http request options and
+// per-attempt options
+const HTTP_REQUEST_DEFAULTS: HttpRequestOptions = {
+  activeHostRoundRobin: true,
+  retryableErrorCodes: RETRYABLE_ERROR_CODES,
+  retryableStatusCodes: RETRYABLE_STATUS_CODES,
+  retryableHttpMethods: RETRYABLE_HTTP_METHODS,
+  exponentialBackoffBase: 100,
+  httpMethod: HTTP_METHOD_GET,
+  stream: false,
+  timeout: DEFAULT_TIMEOUT,
+  useLeader: false,
+  maxRedirects: 10,
+  attempt: 0,
+  retryAttempt: 0,
+  redirectAttempt: 0,
+  json: true,
+};
 
 /**
  * The default to retry a request using the next host in the chain
@@ -149,6 +182,12 @@ function cleanPath(path: string): string {
 }
 
 /**
+ * The regex pattern to check if a uri is absolute or relative,
+ * if it is absolute the host is not appended
+ */
+const ABSOLUTE_URI_PATTERN = /^https?:\/\//;
+
+/**
  * Returns the next wait interval, in milliseconds, using an exponential
  * backoff algorithm.
  * @param {Number} attempt The retry attempt
@@ -168,6 +207,58 @@ export function getWaitTimeExponential(
 }
 
 /**
+ * Returns whether or not the uri passes a test for this.absoluteUriPattern
+ * @returns {Boolean} True if the path is absolute
+ */
+function uriIsAbsolute(uri: string): boolean {
+  return ABSOLUTE_URI_PATTERN.test(uri);
+}
+
+const normalizeOptions = (
+  options?: HttpRequestOptions
+): HttpRequestOptionsNormalized => {
+  const out: HttpRequestOptions = {
+    ...options,
+  };
+
+  if (
+    out.retryableErrorCodes instanceof Set ||
+    Array.isArray(out.retryableErrorCodes)
+  ) {
+    out.retryableErrorCodes = Array.isArray(out.retryableErrorCodes)
+      ? new Set(out.retryableErrorCodes)
+      : out.retryableErrorCodes;
+  }
+  if (
+    out.retryableStatusCodes instanceof Set ||
+    Array.isArray(out.retryableStatusCodes)
+  ) {
+    out.retryableStatusCodes = Array.isArray(out.retryableStatusCodes)
+      ? new Set(out.retryableStatusCodes)
+      : out.retryableStatusCodes;
+  }
+  if (
+    out.retryableHttpMethods instanceof Set ||
+    Array.isArray(out.retryableHttpMethods)
+  ) {
+    out.retryableHttpMethods = Array.isArray(out.retryableHttpMethods)
+      ? new Set(out.retryableHttpMethods)
+      : out.retryableHttpMethods;
+  }
+
+  return out as any;
+};
+
+const mergeOptions = (a?: HttpRequestOptions, b?: HttpRequestOptions) => {
+  const options = {
+    ...normalizeOptions(a),
+    ...normalizeOptions(b),
+  };
+
+  return options;
+};
+
+/**
  * Generic HTTP Request class which all RQLiteJS client
  * should extend for consistent communitication with an RQLite
  * server
@@ -181,33 +272,11 @@ export class HttpRequest {
   activeHostIndex: number = 0;
 
   /**
-   * Whether or not the setNextActiveHostIndex() should
-   * perform a round robin strategy
-   */
-  activeHostRoundRobin = true;
-
-  /**
-   * The regex pattern to check if a uri is absolute or relative,
-   * if it is absolute the host is not appended
-   */
-  absoluteUriPattern = /^https?:\/\//;
-
-  /**
    * A list of hosts that are tried in round robin fashion
    * when certain HTTP responses are received
    * @type {String[]}
    */
   hosts: string[] = [];
-
-  /**
-   * The http agent if it is set
-   */
-  httpAgent?: any;
-
-  /**
-   * The https agent if it is set
-   */
-  httpsAgent?: any;
 
   /**
    * The host list index of the leader node defaults
@@ -216,247 +285,14 @@ export class HttpRequest {
    */
   leaderHostIndex: number = 0;
 
-  /**
-   * Http error codes which are considered retryable
-   * @type {Set}
-   */
-  retryableErrorCodes: Set<any> = RETRYABLE_ERROR_CODES;
+  options: HttpRequestOptionsNormalized;
 
-  /**
-   * Http status codes which are considered retryable
-   * @type {Set}
-   */
-  retryableStatusCodes: Set<any> = RETRYABLE_STATUS_CODES;
-
-  /**
-   * Http methods which are considered retryable
-   * @type {Set}
-   */
-  retryableHttpMethods: Set<any> = RETRYABLE_HTTP_METHODS;
-
-  /**
-   * The exponential backoff base for retries
-   */
-  exponentailBackoffBase?: number = 100;
-
-  /**
-   * Authentication Map
-   * @type {Map}
-   * @property {String} username
-   * @property {String} password
-   */
-  authentication: Map<string, string> = new Map();
-
-  headers?: Record<string, any>;
-
-  /**
-   * Construtor for HttpRequest
-   * @param {String[]|String} hosts An array of RQLite hosts or a string
-   * that will be split on "," to create an array of hosts, the first
-   * host will be tried first when there are multiple hosts
-   * @param {Object} [options={}] Additional options
-   * @param {Object} [options.authentication] Authentication options
-   * @param {String} [options.authentication.username] The host authentication username
-   * @param {String} [options.authentication.password] The host authentication password
-   * @param {Boolean} [options.activeHostRoundRobin=true] If true this.setNextActiveHostIndex()
-   * will perform a round robin when called
-   * @param {any} [options.httpAgent] An option http agent, useful for
-   * keepalive pools using plain HTTP
-   * @param {any} [options.httpsAgent] An option http agent, useful
-   * for keepalive pools using SSL
-   * @param {Set|String[]} [options.retryableErrorCodes] The list of retryable error codes
-   * @param {Set|Number[]} [options.retryableStatusCodes] The list of retryable http status codes
-   * @param {Set|String[]} [options.retryableHttpMethods] The list of retryable http methods
-   * @param {Number} [options.exponentailBackoffBase] The value for exponentail backoff base
-   * for retry exponential backoff
-   */
-  constructor(hosts: string[] | string, options?: HttpRequestOptions2) {
+  constructor(hosts: string[] | string, options?: HttpRequestOptions) {
     this.setHosts(hosts);
     if (this.getTotalHosts() === 0) {
       throw new Error('At least one host must be provided');
     }
-    const {
-      activeHostRoundRobin = true,
-      httpAgent,
-      httpsAgent,
-      retryableErrorCodes,
-      retryableStatusCodes,
-      retryableHttpMethods,
-      exponentailBackoffBase,
-      authentication,
-      headers,
-    } = options ?? {};
-    if (headers) {
-      this.headers = headers;
-    }
-    if (typeof authentication === 'object') {
-      const { username, password } = authentication;
-      if (username) {
-        this.authentication.set('username', username);
-      }
-      if (password) {
-        this.authentication.set('password', password);
-      }
-    }
-    if (typeof activeHostRoundRobin !== 'undefined') {
-      this.setActiveHostRoundRobin(activeHostRoundRobin);
-    }
-    if (typeof httpAgent !== 'undefined') {
-      this.setHttpAgent(httpAgent);
-    }
-    if (typeof httpsAgent !== 'undefined') {
-      this.setHttpsAgent(httpsAgent);
-    }
-    if (
-      retryableErrorCodes instanceof Set ||
-      Array.isArray(retryableErrorCodes)
-    ) {
-      this.setRetryableErrorCodes(
-        Array.isArray(retryableErrorCodes)
-          ? new Set(retryableErrorCodes)
-          : retryableErrorCodes
-      );
-    }
-    if (
-      retryableStatusCodes instanceof Set ||
-      Array.isArray(retryableStatusCodes)
-    ) {
-      this.setRetryableStatusCodes(
-        Array.isArray(retryableStatusCodes)
-          ? new Set(retryableStatusCodes)
-          : retryableStatusCodes
-      );
-    }
-    if (
-      retryableHttpMethods instanceof Set ||
-      Array.isArray(retryableHttpMethods)
-    ) {
-      this.setRetryableHttpMethods(
-        Array.isArray(retryableHttpMethods)
-          ? new Set(retryableHttpMethods)
-          : retryableHttpMethods
-      );
-    }
-    if (Number.isFinite(exponentailBackoffBase)) {
-      this.setExponentailBackoffBase(exponentailBackoffBase);
-    }
-  }
-
-  /**
-   * Set<any> authentication information
-   * @param {Object} [authentication] Authentication data
-   * @param {String} [authentication.username] The host authentication username
-   * @param {String} [authentication.password] The host authentication password
-   */
-  setAuthentication(
-    authentication: {
-      username?: string;
-      password?: string;
-    } = {}
-  ) {
-    const { username, password } = authentication;
-    if (username) {
-      this.authentication.set('username', username);
-    }
-    if (password) {
-      this.authentication.set('password', password);
-    }
-  }
-
-  /**
-   * Set<any> the exponentail backoff base
-   * @param {Number} exponentailBackoffBase
-   */
-  setExponentailBackoffBase(exponentailBackoffBase?: number) {
-    this.exponentailBackoffBase = exponentailBackoffBase;
-  }
-
-  /**
-   * Get the exponentail backoff base
-   * @return {Number} The exponentail backoff base
-   */
-  getExponentailBackoffBase(): number | undefined {
-    return this.exponentailBackoffBase;
-  }
-
-  /**
-   * Set<any> the retryable error codes
-   * @param {Set} retryableErrorCodes
-   */
-  setRetryableErrorCodes(retryableErrorCodes: Set<any>) {
-    this.retryableErrorCodes = retryableErrorCodes;
-  }
-
-  /**
-   * Get the retryable error codes
-   * @returns {Set}
-   */
-  getRetryableErrorCodes(): Set<any> {
-    return this.retryableErrorCodes;
-  }
-
-  /**
-   * Set<any> the retryable status codes
-   * @param {Set} retryableStatusCodes
-   */
-  setRetryableStatusCodes(retryableStatusCodes: Set<any>) {
-    this.retryableStatusCodes = retryableStatusCodes;
-  }
-
-  /**
-   * Get the retryable status codes
-   * @returns {Set}
-   */
-  getRetryableStatusCodes(): Set<any> {
-    return this.retryableStatusCodes;
-  }
-
-  /**
-   * Set<any> the retryable http methods
-   * @param {Set} retryableHttpMethods
-   */
-  setRetryableHttpMethods(retryableHttpMethods: Set<any>) {
-    this.retryableHttpMethods = retryableHttpMethods;
-  }
-
-  /**
-   * Get the retryable http methods
-   * @returns {Set}
-   */
-  getRetryableHttpMethods(): Set<any> {
-    return this.retryableHttpMethods;
-  }
-
-  /**
-   * Set<any> an http agent which is useful for http keepalive requests
-   * @param {any} httpAgent An http agent
-   */
-  setHttpAgent(httpAgent: any) {
-    this.httpAgent = httpAgent;
-  }
-
-  /**
-   * Get the Set<any> http agent
-   * @returns {any|undefined} The https agent if it is set
-   */
-  getHttpAgent(): any | undefined {
-    return this.httpAgent;
-  }
-
-  /**
-   * Set<any> an https agent which is useful for https keepalive requests
-   * @param {any} httpsAgent An https agent
-   */
-  setHttpsAgent(httpsAgent: any) {
-    this.httpsAgent = httpsAgent;
-  }
-
-  /**
-   * Get the Set<any> https agent
-   * @returns {any|undefined} The https agent if it is set
-   */
-  getHttpsAgent(): any | undefined {
-    return this.httpsAgent;
+    this.options = mergeOptions(HTTP_REQUEST_DEFAULTS, options);
   }
 
   /**
@@ -573,23 +409,11 @@ export class HttpRequest {
   }
 
   /**
-   * Set<any> active host round robin value
-   * @param {Boolean} activeHostRoundRobin If true setActiveHostIndex() will
-   * perform a round robin
-   */
-  setActiveHostRoundRobin(activeHostRoundRobin: boolean) {
-    if (typeof activeHostRoundRobin !== 'boolean') {
-      throw new Error('The activeHostRoundRobin argument must be boolean');
-    }
-    this.activeHostRoundRobin = activeHostRoundRobin;
-  }
-
-  /**
    * Get active host round robin value
    * @returns {Boolean} The value of activeHostRoundRobin
    */
   getActiveHostRoundRobin(): boolean {
-    return this.activeHostRoundRobin;
+    return this.options.activeHostRoundRobin ?? false;
   }
 
   /**
@@ -634,14 +458,6 @@ export class HttpRequest {
   }
 
   /**
-   * Returns whether or not the uri passes a test for this.absoluteUriPattern
-   * @returns {Boolean} True if the path is absolute
-   */
-  uriIsAbsolute(uri: string): boolean {
-    return this.absoluteUriPattern.test(uri);
-  }
-
-  /**
    * Returns true when the HTTP request is retryable
    * @param {Object} options The options
    * @param {Number} options.statusCode The HTTP status code
@@ -658,16 +474,29 @@ export class HttpRequest {
   ): boolean {
     const { statusCode, errorCode, httpMethod } = options;
     // Honor strictly the http method
-    if (!this.getRetryableHttpMethods().has(httpMethod)) {
+    if (!this.options.retryableHttpMethods.has(httpMethod!)) {
       return false;
     }
-    if (statusCode && this.getRetryableStatusCodes().has(statusCode)) {
+    if (statusCode && this.options.retryableStatusCodes.has(statusCode)) {
       return true;
     }
-    if (errorCode && this.getRetryableErrorCodes().has(errorCode)) {
+    if (errorCode && this.options.retryableErrorCodes.has(errorCode)) {
       return true;
     }
     return false;
+  }
+
+  async fetch(
+    options?: HttpRequestOptions
+  ): Promise<{ status: number; body: object | string }> {
+    const response = await this.fetchRaw(options);
+
+    const finalOuput = {
+      body: (await response.json()) as any,
+      status: response.status,
+    };
+
+    return finalOuput;
   }
 
   /**
@@ -677,62 +506,33 @@ export class HttpRequest {
    * property when stream is false and a stream when the stream option is true
    * @throws {ERROR_HTTP_REQUEST_MAX_REDIRECTS} When the maximum number of redirect has been reached
    */
-  async fetch(
-    options?: HttpRequestOptions
-  ): Promise<{ status: number; body: object | string }> {
-    const {
-      body,
-      httpMethod = HTTP_METHOD_GET,
-      query,
-      stream = false,
-      timeout = DEAULT_TIMEOUT,
-      useLeader = false,
-      retries = this.getTotalHosts() * 3,
-      maxRedirects = 10,
-      attempt = 0,
-      retryAttempt = 0,
-      redirectAttempt = 0,
-      attemptHostIndex,
-      exponentailBackoffBase = this.getExponentailBackoffBase(),
-      // httpAgent = this.getHttpAgent(),
-      // httpsAgent = this.getHttpsAgent(),
-    } = options ?? {};
+  async fetchRaw(_options?: HttpRequestOptions): Promise<KyResponse> {
+    const options = mergeOptions(
+      { ...this.options, retries: this.getTotalHosts() * 3 },
+      normalizeOptions(_options)
+    );
+
     // Honor the supplied attemptHostIndex or get the active host
-    const activeHost = Number.isFinite(attemptHostIndex)
-      ? this.getHosts()[attemptHostIndex!]
-      : this.getActiveHost(useLeader);
+    const activeHost = Number.isFinite(options.attemptHostIndex)
+      ? this.getHosts()[options.attemptHostIndex!]
+      : this.getActiveHost(options.useLeader!);
 
     let uri = options?.uri;
     if (!uri) {
       throw new Error('The uri option is required');
     }
 
-    uri = this.uriIsAbsolute(uri) ? uri : `${activeHost}/${cleanPath(uri)}`;
+    uri = uriIsAbsolute(uri) ? uri : `${activeHost}/${cleanPath(uri)}`;
     try {
-      let auth: { username: string; password: string } | undefined;
-      if (this.authentication.size) {
-        auth = {
-          username: this.authentication.get('username'),
-          password: this.authentication.get('password'),
-        } as any;
-      }
-
       // const url = new URL(uri);
       // url.search = new URLSearchParams(query).toString();
 
-      const headers = new Headers(
-        createDefaultHeaders({
-          // default headers for client
-          ...this.headers,
-          // headers for fetch request
-          ...options?.headers,
-        })
-      );
+      const headers = new Headers(createDefaultHeaders(options.headers));
 
-      if (auth) {
+      if (options.auth) {
         headers.append(
           'Authorization',
-          `Basic ${btoa(`${auth.username}:${auth.password}`)}`
+          `Basic ${btoa(`${options.auth.username}:${options.auth.password}`)}`
         );
       }
 
@@ -740,9 +540,10 @@ export class HttpRequest {
       const ky = await import('ky').then((m) => m.default);
 
       const response = await ky(uri, {
-        ...(body ? { json: body } : {}),
+        ...(options.body && options.json ? { json: options.body } : {}),
+        ...(options.body && !options.json ? { body: options.body } : {}),
         headers,
-        method: httpMethod,
+        method: options.httpMethod,
         // fetch: nodeFetch,
         // hooks: {
         //   beforeRequest: [
@@ -753,23 +554,18 @@ export class HttpRequest {
         // },
         redirect: 'manual',
         // req,
-        searchParams: query,
-        timeout,
+        searchParams: options.query,
+        timeout: options.timeout,
         // c,
       });
 
-      if (stream) {
-        // TODO: have stream be a separate function to avoid
-        // typescript overloading
-        return response.body as any;
-      }
+      return response;
 
-      const finalOuput = {
-        body: (await response.json()) as any,
-        status: response.status,
-      };
-
-      return finalOuput;
+      // if (options.stream) {
+      //   // TODO: have stream be a separate function to avoid
+      //   // typescript overloading
+      //   return response.body as any;
+      // }
 
       // console.log(`finalOutput`, finalOuput);
 
@@ -822,11 +618,11 @@ export class HttpRequest {
       const retryable = this.requestIsRetryable({
         statusCode: responseStatus,
         errorCode: (e as any).code,
-        httpMethod,
+        httpMethod: options.httpMethod,
       });
       // Save the next active host index and pass it to retry manually
-      let nextAttemptHostIndex = Number.isFinite(attemptHostIndex)
-        ? attemptHostIndex!
+      let nextAttemptHostIndex = Number.isFinite(options.attemptHostIndex)
+        ? options.attemptHostIndex!
         : this.getActiveHostIndex();
 
       nextAttemptHostIndex += 1;
@@ -837,9 +633,9 @@ export class HttpRequest {
       // First check if this is a redirect error
       if (responseStatus === 301 || responseStatus === 302) {
         // We maxed out on redirect attempts
-        if (redirectAttempt >= maxRedirects) {
+        if (options.redirectAttempt! >= options.maxRedirects!) {
           throw new ERROR_HTTP_REQUEST_MAX_REDIRECTS(
-            `The maximum number of redirects ${maxRedirects} has been reached`
+            `The maximum number of redirects ${options.maxRedirects} has been reached`
           );
         }
         const location =
@@ -847,34 +643,34 @@ export class HttpRequest {
             ? responseHeaders.get('location')
             : undefined;
         // If we were asked to use the leader, but got redirect the leader moved so remember it
-        if (useLeader) {
+        if (options.useLeader) {
           const newLeaderHostIndex = this.findHostIndex(location);
           // If the redirect exists in the hosts list remember it for next time
           if (newLeaderHostIndex > -1) {
             this.setLeaderHostIndex(newLeaderHostIndex);
           }
         }
-        return this.fetch({
+        return this.fetchRaw({
           ...options,
           uri: location ?? undefined,
-          attempt: attempt + 1,
-          redirectAttempt: redirectAttempt + 1,
+          attempt: options.attempt! + 1,
+          redirectAttempt: options.redirectAttempt! + 1,
           attemptHostIndex: nextAttemptHostIndex,
         });
       }
-      if (retryable && retryAttempt < retries) {
+      if (retryable && options.retryAttempt! < options.retries!) {
         const waitTime = getWaitTimeExponential(
-          retryAttempt,
-          exponentailBackoffBase
+          options.retryAttempt,
+          options.exponentialBackoffBase
         );
         const delayPromise = new Promise((resolve) => {
           setTimeout(resolve, waitTime);
         });
         await delayPromise;
-        return this.fetch({
+        return this.fetchRaw({
           ...options,
-          attempt: attempt + 1,
-          retryAttempt: retryAttempt + 1,
+          attempt: options.attempt! + 1,
+          retryAttempt: options.retryAttempt! + 1,
           attemptHostIndex: nextAttemptHostIndex,
         });
       }
@@ -887,8 +683,16 @@ export class HttpRequest {
    * @param {HttpRequestOptions} [options={}] The options
    * @see this.fetch() for options
    */
-  async get(options: HttpRequestOptions = {}) {
+  async get(options?: HttpRequestOptions) {
     return this.fetch({ ...options, httpMethod: HTTP_METHOD_GET });
+  }
+
+  async getStream(options?: HttpRequestOptions) {
+    const res = await this.fetchRaw({
+      ...options,
+      httpMethod: HTTP_METHOD_GET,
+    });
+    return res.body!;
   }
 
   /**
@@ -896,7 +700,15 @@ export class HttpRequest {
    * @param {HttpRequestOptions} [options={}] The options
    * @see this.fetch() for options
    */
-  async post(options: HttpRequestOptions = {}) {
+  async post(options?: HttpRequestOptions) {
     return this.fetch({ ...options, httpMethod: HTTP_METHOD_POST });
+  }
+
+  async postStream(options?: HttpRequestOptions) {
+    const res = await this.fetchRaw({
+      ...options,
+      httpMethod: HTTP_METHOD_POST,
+    });
+    return res.body!;
   }
 }

@@ -77,7 +77,13 @@ function handleResponse(
 /**
  * Data api client to perform RQLite queries
  */
-export class DataApiClient extends ApiClient {
+export class DataApiClient {
+  _apiClient: ApiClient;
+
+  constructor(hosts: string[] | string, options?: HttpRequestOptions) {
+    this._apiClient = new ApiClient(hosts, options);
+  }
+
   /**
    * Send an RQLite query API request to the RQLite server
    * @param {String} sql The SQL string to excute on the server
@@ -96,15 +102,21 @@ export class DataApiClient extends ApiClient {
     }
     let response;
     if (Array.isArray(sql)) {
-      response = await super.post(PATH_QUERY, sql, { ...options, useLeader });
+      response = await this._apiClient.post(PATH_QUERY, sql, {
+        ...options,
+        useLeader,
+      });
     } else {
-      response = await super.get(PATH_QUERY, sql, { ...options, useLeader });
+      response = await this._apiClient.get(PATH_QUERY, sql, {
+        ...options,
+        useLeader,
+      });
     }
     // If round robin is true try and balance selects across hosts when
     // the master node is not queried directly
     if (!useLeader) {
       // eslint-disable-next-line no-underscore-dangle
-      this._httpRequest.setNextActiveHostIndex();
+      this._apiClient._httpRequest.setNextActiveHostIndex();
     }
 
     return handleResponse(response as any, options);
@@ -119,7 +131,7 @@ export class DataApiClient extends ApiClient {
     sql: SqlQuery | SqlQuery[],
     options?: ExecuteRequestOptions
   ): Promise<DataResults> {
-    const response = await super.post(PATH_EXECUTE, sql, options);
+    const response = await this._apiClient.post(PATH_EXECUTE, sql, options);
     return handleResponse(response as any, options);
   }
 }
