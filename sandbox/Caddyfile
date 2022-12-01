@@ -1,0 +1,17 @@
+# root ../
+
+
+http://:8080 {
+	root "../"
+	file_server browse
+}
+
+http://:8081 {
+	header Access-Control-Allow-Origin "*"
+  header Access-Control-Allow-Headers "content-type"
+  @options {
+		method OPTIONS
+	}
+	respond @options 204
+	reverse_proxy localhost:4001
+}
