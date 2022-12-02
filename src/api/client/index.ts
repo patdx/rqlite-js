@@ -72,11 +72,14 @@ export class ApiClient {
     if (!path) {
       throw new Error('The path argument is required');
     }
+    const headers = options?.headers;
     return this._httpRequest.get({
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_GET,
-      headers: options?.headers,
+      // TODO: right now the latest headers object "wins"
+      // make sure it both headers objects merge instead
+      ...(headers ? { headers } : {}),
       query: { ...createQuery(options), q: sql },
     });
   }
@@ -97,12 +100,13 @@ export class ApiClient {
     if (!path) {
       throw new Error('The path argument is required');
     }
+    const headers = options?.headers;
     return this._httpRequest.post({
       useLeader,
       uri: path,
       httpMethod: HTTP_METHOD_POST,
       query: createQuery(options),
-      headers: options?.headers,
+      ...(headers ? { headers } : {}),
       body: Array.isArray(sql) ? sql : [sql],
     });
   }

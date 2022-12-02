@@ -12,19 +12,7 @@
         }
       }
     </script>
-    <script type="module">
-      import * as rq from '/dist/@patdx/rqlite-js/index.js';
-      console.log(`window.rq = rq`);
-      window.rq = rq;
-      const client = new rq.DataApiClient('http://localhost:8081', {
-        headers: {
-          'x-database-url': 'hello-world',
-        },
-      });
-      console.log(`window.c = client`);
-      window.c = client;
-      await client.execute(`select * from x`);
-    </script>
+    <script type="module" src="/main.mjs"></script>
   </head>
   <body></body>
 </html>

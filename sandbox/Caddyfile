@@ -1,17 +1,17 @@
-# root ../
-
-
 http://:8080 {
 	root "../"
-	file_server browse
-}
 
-http://:8081 {
-	header Access-Control-Allow-Origin "*"
-  header Access-Control-Allow-Headers "content-type"
-  @options {
-		method OPTIONS
+	@static {
+		path /
+    path /main.mjs
+		path /dist/*
 	}
-	respond @options 204
+
+	handle @static {
+		rewrite / /sandbox/index.html
+    rewrite /main.mjs /sandbox/main.mjs
+		file_server
+	}
+
 	reverse_proxy localhost:4001
 }
