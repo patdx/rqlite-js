@@ -3,13 +3,13 @@ http://:8080 {
 
 	@static {
 		path /
-    path /main.mjs
+		path /main.mjs
 		path /dist/*
 	}
 
 	handle @static {
 		rewrite / /sandbox/index.html
-    rewrite /main.mjs /sandbox/main.mjs
+		rewrite /main.mjs /sandbox/main.mjs
 		file_server
 	}
 
