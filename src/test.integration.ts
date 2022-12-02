@@ -73,7 +73,10 @@ describe('api status client', () => {
 
 describe('api data client', () => {
   console.log('HELLO');
-  const dataApiClient = new DataApiClient(HOST, { httpAgent, httpsAgent });
+  const dataApiClient = new DataApiClient(HOST, {
+    httpAgent,
+    httpsAgent,
+  });
   // eslint-disable-next-line prefer-arrow-callback
   // 'clean up data'
   afterAll(async () => {
