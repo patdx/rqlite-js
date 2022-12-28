@@ -1,4 +1,5 @@
 import { assert, describe, it } from 'vitest';
+import sql from 'sql-template-tag';
 import {
   querySuccess,
   QUERY_SUCCESS_RESPONSE,
@@ -102,6 +103,34 @@ describe('api data', () => {
         body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
+      assert.isTrue(scope.isDone(), 'http request captured by nock');
+      assert.deepEqual(EXECUTE_SUCCESS_RESPONSE, res.body);
+    });
+    it(`should call ${HOST}${PATH_EXECUTE} endpoint with a request body using HTTP POST when performing a delete using sql-template-tag`, async () => {
+      const dataApiClient = new DataApiClient(HOST);
+      const query = sql`DELETE FROM foo WHERE name=${'fiona'}`;
+      const scope = executeSuccess({
+        url: HOST,
+        path: PATH_EXECUTE,
+        body: [[query.sql, ...query.values]],
+      });
+      const res = await dataApiClient.execute(query, { raw: true });
+      assert.isTrue(scope.isDone(), 'http request captured by nock');
+      assert.deepEqual(EXECUTE_SUCCESS_RESPONSE, res.body);
+    });
+    it(`should call ${HOST}${PATH_EXECUTE} endpoint with a request body using HTTP POST when performing a delete using sql-template-tag in postgres dialect`, async () => {
+      const dataApiClient = new DataApiClient(HOST, {
+        dialect: 'postgres',
+      });
+      const query = sql`DELETE FROM foo WHERE name=${'fiona'}`;
+      const scope = executeSuccess({
+        url: HOST,
+        path: PATH_EXECUTE,
+        body: [[query.text, ...query.values]],
+      });
+      const res = await dataApiClient.execute(query, {
+        raw: true,
+      });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
       assert.deepEqual(EXECUTE_SUCCESS_RESPONSE, res.body);
     });

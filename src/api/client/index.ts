@@ -107,7 +107,9 @@ export class ApiClient {
     /** RQLite API options */
     options?: HttpRequestOptions & QueryOptions
   ) {
-    const queries = normalizeManySqlQueries(sql);
+    const queries = normalizeManySqlQueries(sql, {
+      dialect: options?.dialect ?? this._httpRequest.options.dialect,
+    });
     const useLeader = options?.useLeader;
     if (!path) {
       throw new Error('The path argument is required');

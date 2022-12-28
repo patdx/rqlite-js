@@ -8,15 +8,28 @@ import type {
 
 interface SqlTemplateTag {
   sql: string;
+  text: string;
   values?: any[];
 }
+
+/**
+ * Default is "sqlite".
+ * Affects how variables are substituted when using sql-template-tag.
+ * Sqlite and MySQL use the .sql property which provides ?, ?, etc.
+ * Postgres uses the .text property which provides $1, $2, etc.
+ */
+export type SqlDialect = 'sqlite' | 'mysql' | 'postgres';
+
+export type ParseOptions = {
+  dialect?: SqlDialect;
+};
 
 export const isSqlTemplateTag = (obj?: unknown): obj is SqlTemplateTag => {
   if (obj == null) return false;
 
   if (typeof obj === 'object') {
-    const { sql } = obj as SqlTemplateTag;
-    if (typeof sql === 'string') {
+    const { sql, text } = obj as SqlTemplateTag;
+    if (typeof sql === 'string' && typeof text === 'string') {
       return true;
     }
   }
@@ -37,7 +50,8 @@ export const isSqlQueryArrayOrObjectFormat = (
 export type SqlInputOne = SqlQuery | SqlTemplateTag;
 
 export const normalizeOneSqlQuery = (
-  obj: SqlInputOne
+  obj: SqlInputOne,
+  options?: ParseOptions
 ): SqlQueryArrayFormat | SqlQueryObjectFormat => {
   // console.log(`noralizeOneSqlQuery(${JSON.stringify(obj)})`);
   if (Array.isArray(obj)) {
@@ -54,7 +68,10 @@ export const normalizeOneSqlQuery = (
   if (typeof obj === 'string') {
     return [obj];
   } else if (isSqlTemplateTag(obj)) {
-    return [obj.sql, ...(obj.values ?? [])];
+    return [
+      options?.dialect === 'postgres' ? obj.text : obj.sql,
+      ...(obj.values ?? []),
+    ];
   } else {
     return obj as any;
   }
@@ -71,7 +88,8 @@ const canBeParsedAsOneSqlQuery = (el?: unknown): boolean =>
   isSqlQueryArrayOrObjectFormat(el);
 
 export const normalizeManySqlQueries = (
-  obj: SqlInputMany
+  obj: SqlInputMany,
+  options?: ParseOptions
 ): (SqlQueryArrayFormat | SqlQueryObjectFormat)[] => {
   // console.log(`normalizeManySqlQueries(${JSON.stringify(obj)})`);
   if (Array.isArray(obj)) {
@@ -81,13 +99,15 @@ export const normalizeManySqlQueries = (
       // vs plain queries without variables
 
       // (SqlQuery | Sql)[]
-      return (obj as SqlInputOne[]).map((el) => normalizeOneSqlQuery(el));
+      return (obj as SqlInputOne[]).map((el) =>
+        normalizeOneSqlQuery(el, options)
+      );
     } else {
       // however, if the input cannot possible be parsed as multiple queries
       // we will automatically add the array wrapping out of kindness
       // I think in principal we should try to not encourage this behavior.
 
-      const normalized = normalizeOneSqlQuery(obj as SqlInputOne);
+      const normalized = normalizeOneSqlQuery(obj as SqlInputOne, options);
 
       console.warn(
         `Wrap this query in an extra array to avoid ambiguity: ${JSON.stringify(
@@ -100,6 +120,6 @@ export const normalizeManySqlQueries = (
     // x
   } else {
     // SqlQuery | Sql
-    return [normalizeOneSqlQuery(obj)];
+    return [normalizeOneSqlQuery(obj, options)];
   }
 };

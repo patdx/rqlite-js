@@ -97,7 +97,9 @@ export class DataApiClient {
     sql: SqlInputMany,
     options?: QueryRequestOptions
   ): Promise<DataResults> {
-    const queries = normalizeManySqlQueries(sql);
+    const queries = normalizeManySqlQueries(sql, {
+      dialect: options?.dialect ?? this._apiClient._httpRequest.options.dialect,
+    });
 
     const level = options?.level;
     let useLeader = options?.useLeader;

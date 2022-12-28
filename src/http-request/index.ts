@@ -4,6 +4,7 @@
  */
 
 import type { HTTPError, KyResponse } from 'ky';
+import type { SqlDialect } from '../utils/sql-template-tag';
 import { CONTENT_TYPE_APPLICATION_JSON } from './content-types';
 import { ERROR_HTTP_REQUEST_MAX_REDIRECTS } from './errors';
 import { HTTP_METHOD_GET, HTTP_METHOD_POST } from './http-methods';
@@ -119,6 +120,15 @@ export type HttpRequestOptions = {
   retryableErrorCodes?: Set<string> | string[];
   retryableStatusCodes?: Set<number> | number[];
   retryableHttpMethods?: Set<string> | string[];
+
+  /**
+   * By default we use dialect sqlite but when this API is being
+   * used as a proxy server, for example, we may use a different
+   * dialect. Most notably, postgres uses a different format for
+   * expressing paramterized values. This function affects the
+   * parsing of sql template tags.
+   */
+  dialect?: SqlDialect;
 };
 
 export type HttpRequestOptionsNormalized = Omit<

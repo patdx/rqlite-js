@@ -16,7 +16,7 @@ describe('sql-template-tag', () => {
       isSqlTemplateTag([sql`SELECT * from table`, sql`SELECT * from table`])
     ).toBe(false);
     expect(isSqlTemplateTag({ someText: 'hello world' })).toBe(false);
-    expect(isSqlTemplateTag({ sql: 'hi there' })).toBe(true); // effectively we are checking for a string property named "sql"
+    expect(isSqlTemplateTag({ sql: 'hi there', text: 'hi there' })).toBe(true); // effectively we are checking for a string property named "sql"
   });
 
   test('can normalize a single sql query', () => {
@@ -183,5 +183,20 @@ describe('sql-template-tag', () => {
       ],
     ]);
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  test('supports postgres dialect when specified', () => {
+    expect(
+      normalizeManySqlQueries(
+        [
+          sql`SELECT * FROM users WHERE id = ${1}`,
+          sql`SELECT * FROM users WHERE id = ${1}`,
+        ],
+        { dialect: 'postgres' }
+      )
+    ).toEqual([
+      ['SELECT * FROM users WHERE id = $1', 1],
+      ['SELECT * FROM users WHERE id = $1', 1],
+    ]);
   });
 });
