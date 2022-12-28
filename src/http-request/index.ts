@@ -569,7 +569,7 @@ export class HttpRequest {
           : {}),
 
         timeout: options.timeout,
-        // c,
+        credentials: undefined, // cloudflare fix https://github.com/sindresorhus/ky/issues/366
       });
 
       return response;
