@@ -7,6 +7,10 @@ import {
   HTTP_METHOD_GET,
   HTTP_METHOD_POST,
 } from '../../http-request/http-methods';
+import {
+  normalizeManySqlQueries,
+  SqlInputMany,
+} from '../../utils/sql-template-tag';
 
 type QueryOptions = {
   /** The consistency level */
@@ -39,12 +43,19 @@ export function createQuery(options?: QueryOptions): QueryOptions {
   }, {});
 }
 
-type PrimativeType = string | number | null | undefined;
-
-export type SqlQuery =
+// I don't think arrays are possible or common in sqlite but they may be used in postgres, for example.
+type PrimativeType =
   | string
-  | [string, ...PrimativeType[]]
-  | [string, Record<string, PrimativeType>];
+  | number
+  | boolean
+  | null
+  | undefined
+  | Array<PrimativeType>;
+
+export type SqlQueryArrayFormat = [string, ...PrimativeType[]];
+export type SqlQueryObjectFormat = [string, Record<string, PrimativeType>];
+
+export type SqlQuery = string | SqlQueryArrayFormat | SqlQueryObjectFormat;
 
 /**
  * Base API client for RQLite which abstracts the HTTP calls
@@ -92,10 +103,11 @@ export class ApiClient {
    */
   async post(
     path: string,
-    sql: SqlQuery | SqlQuery[],
+    sql: SqlInputMany,
     /** RQLite API options */
     options?: HttpRequestOptions & QueryOptions
   ) {
+    const queries = normalizeManySqlQueries(sql);
     const useLeader = options?.useLeader;
     if (!path) {
       throw new Error('The path argument is required');
@@ -107,7 +119,7 @@ export class ApiClient {
       httpMethod: HTTP_METHOD_POST,
       query: createQuery(options),
       ...(headers ? { headers } : {}),
-      body: Array.isArray(sql) ? sql : [sql],
+      body: queries,
     });
   }
 }
