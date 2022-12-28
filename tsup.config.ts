@@ -25,6 +25,7 @@ export default defineConfig({
           'version',
           'dependencies',
           'peerDependencies',
+          'peerDependenciesMeta',
           'repository',
           'keywords',
           'author',
