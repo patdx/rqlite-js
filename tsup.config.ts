@@ -9,6 +9,7 @@ export default defineConfig({
   dts: true,
   splitting: false,
   // sourcemap: true,
+  target: 'node16',
   clean: true,
   format: ['cjs', 'esm'],
   onSuccess: async () => {

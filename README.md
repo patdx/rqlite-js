@@ -18,6 +18,8 @@ This is an opinionated fork of rqlite-js with:
   non-Node environments.
 - Built in support for `sql` tag from
   [sql-template-tag](https://www.npmjs.com/package/sql-template-tag)
+- Minimum version of Node 16 or equivalent (eg, native async/await support)
+  required
 
 It is still highly experimental (and will probably remain that way). Many of the
 tests are passing however some tests especially related to failover features as
