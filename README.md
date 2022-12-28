@@ -3,12 +3,12 @@
 ## How to install
 
 ```
-npm install @patdx/rqlite-js ky
+npm install @patdx/rqlite-js ky sql-template-tag
 ```
 
 ## Changes from rqlite-js
 
-This is an opinionated for of rqlite-js with:
+This is an opinionated fork of rqlite-js with:
 
 - TypeScript
 - ES module output
@@ -16,6 +16,8 @@ This is an opinionated for of rqlite-js with:
 - Based on `fetch()` (actually using the `ky` wrapper for fetch at the moment)
 - Intended to have compatibility with Cloudflare Workers, Browsers and other
   non-Node environments.
+- Built in support for `sql` tag from
+  [sql-template-tag](https://www.npmjs.com/package/sql-template-tag)
 
 It is still highly experimental (and will probably remain that way). Many of the
 tests are passing however some tests especially related to failover features as
@@ -74,12 +76,16 @@ table.
 
 ```javascript
 import { DataApiClient } from 'rqlite-js';
+import sql from 'sql-template-tag';
 
 const dataApiClient = new DataApiClient('http://localhost:4001');
+
 try {
   // You can create your own raw SQL query or use another SQL generator library of your liking.
-  const sql = 'CREATE TABLE foo (id integer not null primary key, name text)';
-  const dataResults = await dataApiClient.execute(sql);
+
+  const dataResults = await dataApiClient.execute(
+    sql`CREATE TABLE foo (id integer not null primary key, name text)`
+  );
   // Check the results for an error to make sure we the SQL query did
   // not generate an error while executing.
   if (dataResults.hasError()) {

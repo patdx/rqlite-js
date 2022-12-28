@@ -3,10 +3,14 @@
  * as query and execute
  * @module api/data
  */
-import { HttpRequestOptions } from '../../http-request';
-import { ApiClient, SqlQuery } from '../client';
+import type { HttpRequestOptions } from '../../http-request';
+import {
+  normalizeManySqlQueries,
+  SqlInputMany,
+} from '../../utils/sql-template-tag';
+import { ApiClient } from '../client';
 import { DataResults } from '../results';
-import { RawDataResults } from '../results/data-results';
+import type { RawDataResults } from '../results/data-results';
 
 /**
  * The RQLite query api path
@@ -86,13 +90,15 @@ export class DataApiClient {
 
   /**
    * Send an RQLite query API request to the RQLite server
-   * @param {String} sql The SQL string to excute on the server
+   * @param sql The SQL string to excute on the server
    * @param {QueryRequestOptions} [options={}] RQLite api options
    */
   async query(
-    sql: SqlQuery | SqlQuery[],
+    sql: SqlInputMany,
     options?: QueryRequestOptions
   ): Promise<DataResults> {
+    const queries = normalizeManySqlQueries(sql);
+
     const level = options?.level;
     let useLeader = options?.useLeader;
     // Weak and strong consistency will be redirect to the master anyway
@@ -101,13 +107,14 @@ export class DataApiClient {
       useLeader = true;
     }
     let response;
-    if (Array.isArray(sql)) {
-      response = await this._apiClient.post(PATH_QUERY, sql, {
+    if (queries.length === 1 && queries[0].length === 1) {
+      // simple case can use GET request
+      response = await this._apiClient.get(PATH_QUERY, queries[0][0], {
         ...options,
         useLeader,
       });
     } else {
-      response = await this._apiClient.get(PATH_QUERY, sql, {
+      response = await this._apiClient.post(PATH_QUERY, queries, {
         ...options,
         useLeader,
       });
@@ -128,7 +135,7 @@ export class DataApiClient {
    * @param {ExecuteRequestOptions} [options={}] RQLite execute api options
    */
   async execute(
-    sql: SqlQuery | SqlQuery[],
+    sql: SqlInputMany,
     options?: ExecuteRequestOptions
   ): Promise<DataResults> {
     const response = await this._apiClient.post(PATH_EXECUTE, sql, options);

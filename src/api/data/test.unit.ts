@@ -31,14 +31,16 @@ describe('api data', () => {
     });
     it(`should call ${HOST}${PATH_QUERY} endpoint with a query using HTTP POST if sql is an array`, async () => {
       const dataApiClient = new DataApiClient(HOST);
-      const sql = ['SELECT * FROM foo', 'SELECT * FROM bar'];
+      const sql1 = 'SELECT * FROM foo';
+      const sql2 = 'SELECT * FROM bar';
+      const sql = [sql1, sql2];
       const level = 'weak';
       const apiQuery = { level };
       const scope = queryMultipleSuccess({
         url: HOST,
         path: PATH_QUERY,
         query: apiQuery,
-        body: sql,
+        body: [[sql1], [sql2]],
       });
       const res = await dataApiClient.query(sql, { level, raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -61,7 +63,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -73,7 +75,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -85,7 +87,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -97,7 +99,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -110,7 +112,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');
@@ -122,7 +124,7 @@ describe('api data', () => {
       const scope = executeSuccess({
         url: HOST,
         path: PATH_EXECUTE,
-        body: [sql],
+        body: [[sql]],
       });
       const res = await dataApiClient.execute(sql, { raw: true });
       assert.isTrue(scope.isDone(), 'http request captured by nock');

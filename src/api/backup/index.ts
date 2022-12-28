@@ -52,7 +52,9 @@ export class BackupApiClient {
         // Always sends application/octet-stream from the server in RQLite v4.x
         Accept: CONTENT_TYPE_APPLICATION_OCTET_STREAM,
       },
-      query: { fmt: format === BACKUP_DATA_FORMAT_SQL ? format : undefined },
+      ...(format === BACKUP_DATA_FORMAT_SQL
+        ? { query: { fmt: BACKUP_DATA_FORMAT_SQL } }
+        : {}),
       json: false,
       stream: true,
       uri: PATH_BACKUP,

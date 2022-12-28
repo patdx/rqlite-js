@@ -4,7 +4,7 @@
  */
 
 import { safeParseFloat, safeParseInt } from '../../utils';
-import { DataResultError } from './data-result-error';
+import type { DataResultError } from './data-result-error';
 
 export type RawDataResult = {
   error: string;

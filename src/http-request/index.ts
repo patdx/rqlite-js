@@ -554,7 +554,10 @@ export class HttpRequest {
         // },
         redirect: 'manual',
         // req,
-        searchParams: options.query,
+        ...(Object.keys(options.query ?? {}).length >= 1
+          ? { searchParams: options.query }
+          : {}),
+
         timeout: options.timeout,
         // c,
       });
